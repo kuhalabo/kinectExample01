@@ -9,6 +9,6 @@ int main() {
     //ofSetupOpenGL(&window, 640*2, 480, OF_WINDOW);
     //ofSetupOpenGL(&window, 1024*2, 768, OF_WINDOW);
 
-	ofRunApp(new ofApp());
-	//ofRunApp(new gameOfLife());
+	//ofRunApp(new ofApp());
+	ofRunApp(new gameOfLife());
 }
