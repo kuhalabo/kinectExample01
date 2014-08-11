@@ -31,6 +31,9 @@ patternDetect *glider3;
 vector<resPattern> datas;
 vector<resPattern>::iterator resData;
 
+// by kuha for screen size 256 * x
+const int SCREENRATE = 2;
+
 /*//////////////////////////////////*/
 
 ofImage myImage;
@@ -124,11 +127,10 @@ void gameOfLife::update() {
         datas.push_back(glider1->detection(grid, rows, cols));
         datas.push_back(glider2->detection(grid, rows, cols));
         datas.push_back(glider3->detection(grid, rows, cols));
-        oscSending(datas);
+//        oscSending(datas);
     }
-    
-    //----------------------------
-    // kinect update
+//----------------------------
+// kinect update
 	ofBackground(100, 100, 100);
 	
 	kinect.update();
@@ -212,12 +214,12 @@ void gameOfLife::update() {
 }
 
 /*今は参照渡し風に書いている　複数のインスタンスを渡してバグが生まれたら対応*/
+/*
 void gameOfLife::oscSending(vector<resPattern> &datas) {
     for(resData = datas.begin(); resData != datas.end(); ++resData) {
         std::stringstream result_x, result_y;
         std::copy(&*resData->x.begin(), &*resData->x.end(), std::ostream_iterator<int>(result_x, ","));
         std::copy(&*resData->y.begin(), &*resData->y.end(), std::ostream_iterator<int>(result_y, ","));
-        /*
          ofxOscMessage mx, my;
          string textName = "/";
          textName += resData->patternName;
@@ -234,12 +236,9 @@ void gameOfLife::oscSending(vector<resPattern> &datas) {
          //メッセージを送信
          sender.sendMessage( mx );
          sender.sendMessage( my );
-         */
     };
-    
-    
 }
-
+*/
 
 void gameOfLife::tick() {
 	// get active neighbors for each cell
@@ -313,19 +312,19 @@ void gameOfLife::draw() {
     //kinect.drawDepth(kinect.width, 0, kinect.width, kinect.height);
     
     // draw from the live kinect
-    kinect.drawDepth(10 + 1024, 10, 400, 300);
-    kinect.draw(420 + 1024, 10, 400, 300);
+    kinect.drawDepth(10 + 256 * SCREENRATE, 10, 400, 300);
+    kinect.draw(420 + 256 * SCREENRATE, 10, 400, 300);
     
     ofSetColor(255, 0, 0, 50);
-    grayImage01.draw(10 + 1024, 320, 400, 300);
+    grayImage01.draw(10 + 256 * SCREENRATE, 320, 400, 300);
     ofSetColor(255, 255, 0, 100);
-    contourFinder01.draw(10 + 1024, 320, 400, 300);
+    contourFinder01.draw(10 + 256 * SCREENRATE, 320, 400, 300);
     
     ofSetColor(0, 0, 255, 50);
     //grayImage02.draw(420, 320, 400, 300);
-    grayImage02.draw(10 + 1024, 320, 400, 300);
+    grayImage02.draw(10 + 256 * SCREENRATE, 320, 400, 300);
     ofSetColor(0, 255, 255, 100);
-    contourFinder02.draw(10 + 1024, 320, 400, 300);
+    contourFinder02.draw(10 + 256 * SCREENRATE, 320, 400, 300);
 	
 	// draw instructions
 	ofSetColor(255, 255, 255);
@@ -372,7 +371,7 @@ void gameOfLife::drawingResPatterns(vector<resPattern> &datas, matchPattern &mPa
                         if (mPattern.pattern[mPattern.patternGrid[0] * i + j ] == 1) {
                             ofSetColor(paramsColor.r, paramsColor.g, paramsColor.b, 100);
                             ofFill();
-                            //              myImage.ofImage_::draw((float)((i + resData->x.at(h)) * cellWidth), (float)((j + resData->y.at(h)) * cellHeight), cellWidth*3.0, cellHeight*3.0);
+                                          myImage.ofImage_::draw((float)((i + resData->x.at(h)) * cellWidth), (float)((j + resData->y.at(h)) * cellHeight), cellWidth*3.0, cellHeight*3.0);
                             ofRect( (i + resData->x.at(h)) * cellWidth, (j + resData->y.at(h)) * cellHeight, cellWidth, cellHeight);
                             ofNoFill();
                         }
