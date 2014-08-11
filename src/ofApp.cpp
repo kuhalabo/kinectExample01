@@ -24,11 +24,6 @@ void ofApp::setup() {
 		ofLogNotice() << "zero plane dist: " << kinect.getZeroPlaneDistance() << "mm";
 	}
 	
-#ifdef USE_TWO_KINECTS
-	kinect2.init();
-	kinect2.open();
-#endif
-	
 	colorImg.allocate(kinect.width, kinect.height);
 	grayImage01.allocate(kinect.width, kinect.height);
 	grayImage02.allocate(kinect.width, kinect.height);
@@ -49,9 +44,6 @@ void ofApp::setup() {
 	// zero the tilt on startup
 	angle = 0;
 	kinect.setCameraTiltAngle(angle);
-	
-	// start from the front
-	bDrawPointCloud = false;
 }
 
 //--------------------------------------------------------------
@@ -60,7 +52,7 @@ void ofApp::update() {
 	ofBackground(100, 100, 100);
 	
 	kinect.update();
-
+    
 	// there is a new frame and we are connected
 	if(kinect.isFrameNew()) {
 		
@@ -100,10 +92,10 @@ void ofApp::update() {
     }
     
     if(kinect.isFrameNew()) {
-            
+        
         // load grayscale depth image from the kinect source
-           grayImage02.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
-            
+        grayImage02.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
+        
         // we do two thresholds - one for the far plane and one for the near plane
         // we then do a cvAnd to get the pixels which are a union of the two thresholds
         if(bThreshWithOpenCV) {
@@ -116,7 +108,7 @@ void ofApp::update() {
             
             // or we do it ourselves - show people how they can work with the pixels
             unsigned char * pix = grayImage02.getPixels();
-                
+            
             int numPixels = grayImage02.getWidth() * grayImage02.getHeight();
             for(int i = 0; i < numPixels; i++) {
                 if(pix[i] < nearThreshold02 && pix[i] > farThreshold02) {
@@ -128,7 +120,7 @@ void ofApp::update() {
                 }
             }
         }
-
+        
 		// update the cv images
         grayImage02.flagImageChanged();
 		
@@ -137,9 +129,6 @@ void ofApp::update() {
         contourFinder02.findContours(grayImage02, 10, (kinect.width*kinect.height)/2, 20, false);
 	}
 	
-#ifdef USE_TWO_KINECTS
-	kinect2.update();
-#endif
 }
 
 //--------------------------------------------------------------
@@ -147,40 +136,29 @@ void ofApp::draw() {
 	
 	ofSetColor(255, 255, 255);
 	
-	if(bDrawPointCloud) {
-		easyCam.begin();
-		drawPointCloud();
-		easyCam.end();
-	} else {
-        
-        //kinect.draw(0, 0, kinect.width, kinect.height);
-        //kinect.drawDepth(kinect.width, 0, kinect.width, kinect.height);
-        
-        // draw from the live kinect
-		kinect.drawDepth(10, 10, 400, 300);
-		kinect.draw(420, 10, 400, 300);
-		
-        ofSetColor(255, 0, 0, 50);
-		grayImage01.draw(10, 320, 400, 300);
-        ofSetColor(255, 255, 0, 100);
-		contourFinder01.draw(10, 320, 400, 300);
-
-        ofSetColor(0, 0, 255, 50);
-		//grayImage02.draw(420, 320, 400, 300);
-		grayImage02.draw(10, 320, 400, 300);
-        ofSetColor(0, 255, 255, 100);
-		contourFinder02.draw(10, 320, 400, 300);
-
-#ifdef USE_TWO_KINECTS
-		kinect2.draw(420, 320, 400, 300);
-#endif
-	}
+    //kinect.draw(0, 0, kinect.width, kinect.height);
+    //kinect.drawDepth(kinect.width, 0, kinect.width, kinect.height);
+    
+    // draw from the live kinect
+    kinect.drawDepth(10 + 1024, 10, 400, 300);
+    kinect.draw(420 + 1024, 10, 400, 300);
+    
+    ofSetColor(255, 0, 0, 50);
+    grayImage01.draw(10 + 1024, 320, 400, 300);
+    ofSetColor(255, 255, 0, 100);
+    contourFinder01.draw(10 + 1024, 320, 400, 300);
+    
+    ofSetColor(0, 0, 255, 50);
+    //grayImage02.draw(420, 320, 400, 300);
+    grayImage02.draw(10 + 1024, 320, 400, 300);
+    ofSetColor(0, 255, 255, 100);
+    contourFinder02.draw(10 + 1024, 320, 400, 300);
 	
 	// draw instructions
 	ofSetColor(255, 255, 255);
 	//ofSetColor(255, 255, 0);
 	stringstream reportStream;
-        
+    
     if(kinect.hasAccelControl()) {
         reportStream << "accel is: " << ofToString(kinect.getMksAccel().x, 2) << " / "
         << ofToString(kinect.getMksAccel().y, 2) << " / "
@@ -196,7 +174,7 @@ void ofApp::draw() {
 	<< "set far threshold " << farThreshold01 << " (press: < >) num blobs found " << contourFinder01.nBlobs
 	<< ", fps: " << ofGetFrameRate() << endl
 	<< "press c to close the connection and o to open it again, connection is: " << kinect.isConnected() << endl;
-
+    
     if(kinect.hasCamTiltControl()) {
     	reportStream << "press UP and DOWN to change the tilt angle: " << angle << " degrees" << endl
         << "press 1-5 & 0 to change the led mode" << endl;
@@ -205,42 +183,10 @@ void ofApp::draw() {
 	ofDrawBitmapString(reportStream.str(), 20, 652);
     
 }
-
-void ofApp::drawPointCloud() {
-	int w = 640;
-	int h = 480;
-	ofMesh mesh;
-	mesh.setMode(OF_PRIMITIVE_POINTS);
-	int step = 2;
-	for(int y = 0; y < h; y += step) {
-		for(int x = 0; x < w; x += step) {
-			if(kinect.getDistanceAt(x, y) > 0) {
-//				mesh.addColor(kinect.getColorAt(x,y));
-				mesh.addColor(kinect.getColorAt(x,y));
-				mesh.addVertex(kinect.getWorldCoordinateAt(x, y));
-			}
-		}
-	}
-//	glPointSize(3);
-	glPointSize(3);
-	ofPushMatrix();
-	// the projected points are 'upside down' and 'backwards' 
-	ofScale(1, -1, -1);
-	ofTranslate(0, 0, -1000); // center the points a bit
-	ofEnableDepthTest();
-	mesh.drawVertices();
-	ofDisableDepthTest();
-	ofPopMatrix();
-}
-
 //--------------------------------------------------------------
 void ofApp::exit() {
 	kinect.setCameraTiltAngle(0); // zero the tilt on exit
 	kinect.close();
-	
-#ifdef USE_TWO_KINECTS
-	kinect2.close();
-#endif
 }
 
 //--------------------------------------------------------------
@@ -248,10 +194,6 @@ void ofApp::keyPressed (int key) {
 	switch (key) {
 		case ' ':
 			bThreshWithOpenCV = !bThreshWithOpenCV;
-			break;
-			
-		case'p':
-			bDrawPointCloud = !bDrawPointCloud;
 			break;
 			
 		case '>':

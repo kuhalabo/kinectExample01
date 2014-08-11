@@ -37,11 +37,7 @@ public:
     ofImage depthImage; // Kinect depth image
     
     ofImage threshImage;
-//    ofxControlPanel gui;
-
     
-	void drawPointCloud();
-	
 	void keyPressed(int key);
 	void mouseDragged(int x, int y, int button);
 	void mousePressed(int x, int y, int button);
@@ -49,11 +45,6 @@ public:
 	void windowResized(int w, int h);
 	
 	ofxKinect kinect;
-	
-#ifdef USE_TWO_KINECTS
-	ofxKinect kinect2;
-#endif
-	
 	ofxCvColorImage colorImg;
 	
 	ofxCvGrayscaleImage grayImage01; // grayscale depth image
@@ -65,7 +56,6 @@ public:
 	ofxCvContourFinder contourFinder01, contourFinder02;
 	
 	bool bThreshWithOpenCV;
-	bool bDrawPointCloud;
 	
 	int nearThreshold01,nearThreshold02;
 	int farThreshold01,farThreshold02;
