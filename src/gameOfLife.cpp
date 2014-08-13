@@ -11,9 +11,10 @@
 #include "patterns.h"
 #include "patternDetect.h"
 
-
 const int WIDTH = 800;
 const int HEIGHT = 500;
+//const int WIDTH = 1024;
+//const int HEIGHT = 728;
 const int CELLSIZE = 6;
 const int FULLSCREEN_CELLSIZE = 8;
 const int TICK_INTERVAL = 6;
@@ -32,7 +33,7 @@ vector<resPattern> datas;
 vector<resPattern>::iterator resData;
 
 // by kuha for screen size 256 * x
-const int SCREENRATE = 2;
+const int SCREENRATE = 1;
 
 /*//////////////////////////////////*/
 
@@ -45,6 +46,10 @@ void gameOfLife::setup() {
     
     ofSetFullscreen(false);
     ofSetWindowShape(WIDTH, HEIGHT);
+    
+// by kuha Mix color setting
+    ofEnableSmoothing();
+    glEnable(GL_BLEND);
     
     init(WIDTH, HEIGHT, CELLSIZE);
     
@@ -280,10 +285,12 @@ void gameOfLife::draw() {
 		for (int j=0; j<rows; j++) {
             cell thisCell = grid[i][j];
 			ofSetColor(200, 200, 200);
+			//ofSetColor(0, 255, 255);
 			ofNoFill();
             //			ofRect(i*cellWidth, j*cellHeight, cellWidth, cellHeight);
             if (thisCell.currState == true) {
-				ofSetColor(thisCell.color.r, thisCell.color.g, thisCell.color.b, 30);
+				//ofSetColor(thisCell.color.r, thisCell.color.g, thisCell.color.b, 30); // dark cell
+				ofSetColor(thisCell.color.r, thisCell.color.g, thisCell.color.b, 130); // bright cell
 				ofFill();
                 myImage.ofImage_::draw((float)(i*cellWidth), (float)(j*cellHeight), cellWidth*2.0, cellHeight*2.0);
                 ofRect(i*cellWidth, j*cellHeight, cellWidth, cellHeight);
@@ -304,56 +311,72 @@ void gameOfLife::draw() {
         datas.clear();
     }
     
-    //------------------------------------
-    // kinect draw
+//------------------------------------
+// kinect draw
 	ofSetColor(255, 255, 255);
 	
     //kinect.draw(0, 0, kinect.width, kinect.height);
     //kinect.drawDepth(kinect.width, 0, kinect.width, kinect.height);
     
     // draw from the live kinect
-    kinect.drawDepth(10 + 256 * SCREENRATE, 10, 400, 300);
-    kinect.draw(420 + 256 * SCREENRATE, 10, 400, 300);
+    if (!fullScreen) {
+        kinect.drawDepth(10 + 256 * SCREENRATE, 10, 400, 300);
+        kinect.draw(420 + 256 * SCREENRATE, 10, 400, 300);
+
+        ofSetColor(255, 0, 0, 100);
+        grayImage01.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+        ofSetColor(255, 255, 0, 100);
+        contourFinder01.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+        
+        ofSetColor(0, 255, 0, 100);
+        grayImage02.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+        ofSetColor(0, 255, 255, 100);
+        contourFinder02.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+
+        // draw instructions
+        ofSetColor(255, 255, 255);
+        //ofSetColor(255, 255, 0);
+        stringstream reportStream;
+        
+        if(kinect.hasAccelControl()) {
+            reportStream << "accel is: " << ofToString(kinect.getMksAccel().x, 2) << " / "
+            << ofToString(kinect.getMksAccel().y, 2) << " / "
+            << ofToString(kinect.getMksAccel().z, 2) << endl;
+        } else {
+            reportStream << "Note: this is a newer Xbox Kinect or Kinect For Windows device," << endl
+            << "motor / led / accel controls are not currently supported" << endl << endl;
+        }
+        
+        reportStream << "press p to switch between images and point cloud, rotate the point cloud with the mouse" << endl
+        << "using opencv threshold = " << bThreshWithOpenCV <<" (press spacebar)" << endl
+        << "set near threshold " << nearThreshold01 << " (press: + -)" << endl
+        << "set far threshold " << farThreshold01 << " (press: < >) num blobs found " << contourFinder01.nBlobs
+        << ", fps: " << ofGetFrameRate() << endl
+        << "press c to close the connection and o to open it again, connection is: " << kinect.isConnected() << endl;
+        
+        if(kinect.hasCamTiltControl()) {
+            reportStream << "press UP and DOWN to change the tilt angle: " << angle << " degrees" << endl
+            << "press 1-5 & 0 to change the led mode" << endl;
+            ofDrawBitmapString(reportStream.str(), 20, 652);
+        }
+    }
+    else{
+//        init(ofGetScreenWidth(), ofGetScreenHeight(), FULLSCREEN_CELLSIZE);
+        int wfull = ofGetScreenWidth();
+        int hfull = ofGetScreenHeight();
+        ofSetColor(255, 0, 0, 50);
+        grayImage01.draw(0, 0, wfull, hfull);
+        ofSetColor(255, 255, 0, 100);
+        contourFinder01.draw(0, 0, wfull, hfull);
+        
+        ofSetColor(0, 255, 0, 100);
+        grayImage02.draw(0, 0, wfull, hfull);
+        ofSetColor(0, 255, 255, 50);
+        contourFinder02.draw(0, 0, wfull, hfull);
+        
+    }
     
-    ofSetColor(255, 0, 0, 50);
-    grayImage01.draw(10 + 256 * SCREENRATE, 320, 400, 300);
-    ofSetColor(255, 255, 0, 100);
-    contourFinder01.draw(10 + 256 * SCREENRATE, 320, 400, 300);
-    
-    ofSetColor(0, 0, 255, 50);
-    //grayImage02.draw(420, 320, 400, 300);
-    grayImage02.draw(10 + 256 * SCREENRATE, 320, 400, 300);
-    ofSetColor(0, 255, 255, 100);
-    contourFinder02.draw(10 + 256 * SCREENRATE, 320, 400, 300);
 	
-	// draw instructions
-	ofSetColor(255, 255, 255);
-	//ofSetColor(255, 255, 0);
-	stringstream reportStream;
-    
-    if(kinect.hasAccelControl()) {
-        reportStream << "accel is: " << ofToString(kinect.getMksAccel().x, 2) << " / "
-        << ofToString(kinect.getMksAccel().y, 2) << " / "
-        << ofToString(kinect.getMksAccel().z, 2) << endl;
-    } else {
-        reportStream << "Note: this is a newer Xbox Kinect or Kinect For Windows device," << endl
-		<< "motor / led / accel controls are not currently supported" << endl << endl;
-    }
-    
-	reportStream << "press p to switch between images and point cloud, rotate the point cloud with the mouse" << endl
-	<< "using opencv threshold = " << bThreshWithOpenCV <<" (press spacebar)" << endl
-	<< "set near threshold " << nearThreshold01 << " (press: + -)" << endl
-	<< "set far threshold " << farThreshold01 << " (press: < >) num blobs found " << contourFinder01.nBlobs
-	<< ", fps: " << ofGetFrameRate() << endl
-	<< "press c to close the connection and o to open it again, connection is: " << kinect.isConnected() << endl;
-    
-    if(kinect.hasCamTiltControl()) {
-    	reportStream << "press UP and DOWN to change the tilt angle: " << angle << " degrees" << endl
-        << "press 1-5 & 0 to change the led mode" << endl;
-    }
-    
-	ofDrawBitmapString(reportStream.str(), 20, 652);
-    
 }
 
 /*::::::::::::::::::::::::
