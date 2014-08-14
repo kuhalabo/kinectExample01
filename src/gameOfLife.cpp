@@ -366,29 +366,38 @@ void gameOfLife::draw() {
 //        init(ofGetScreenWidth(), ofGetScreenHeight(), FULLSCREEN_CELLSIZE);
         int wfull = ofGetScreenWidth();
         int hfull = ofGetScreenHeight();
+        int xCell, yCell;
         ofSetColor(255, 0, 0, 100);
         grayImage01.draw(0, 0, wfull, hfull);
         ofSetColor(255, 255, 0, 100);
         contourFinder01.draw(0, 0, wfull, hfull);
-        ofSetColor(255, 0, 0,100);
-        // draw Centorid of contour
-        int centroX = contourFinder01.blobs[0].centroid.x;
-        int centroY = contourFinder01.blobs[0].centroid.y;
-        ofRect(centroX,centroY,50,50);
-        if(centroX > 0 && centroX < WIDTH && centroY > 0 && centroY < HEIGHT){
-            int xCell = centroX * wfull / WIDTH / FULLSCREEN_CELLSIZE;
-            int yCell = centroY * hfull / HEIGHT / FULLSCREEN_CELLSIZE;
-            patterns::glider01(grid, xCell, yCell);
-            //patterns::glider01(grid, 100, 20);
+//        ofSetColor(255, 0, 0,100);
+        // draw Centorid of contour01
+        int centroX01 = contourFinder01.blobs[0].centroid.x;
+        int centroY01 = contourFinder01.blobs[0].centroid.y;
+        ofRect(centroX01 * wfull / WIDTH, centroY01 * hfull / HEIGHT,50,50);
+        if(centroX01 > 0 && centroX01 < WIDTH && centroY01 > 0 && centroY01 < HEIGHT){
+            xCell = centroX01 * wfull / WIDTH / FULLSCREEN_CELLSIZE;
+            yCell = centroY01 * hfull / HEIGHT / FULLSCREEN_CELLSIZE;
+//            patterns::glider01(grid, xCell, yCell);
         }
 
         ofSetColor(0, 255, 0, 100);
         grayImage02.draw(0, 0, wfull, hfull);
         ofSetColor(0, 255, 255, 50);
         contourFinder02.draw(0, 0, wfull, hfull);
-        ofSetColor(0, 255, 0);
+//        ofSetColor(0, 255, 0);
         // draw Centorid of contour
         ofRect(contourFinder02.blobs[0].centroid.x,contourFinder02.blobs[0].centroid.y,50,50);
+        // draw Centorid of contour01
+        int centroX02 = contourFinder02.blobs[0].centroid.x;
+        int centroY02 = contourFinder02.blobs[0].centroid.y;
+        ofRect(centroX02 * wfull / WIDTH ,centroY02 * hfull / HEIGHT ,50,50);
+        if(centroX02 > 0 && centroX02 < WIDTH && centroY02 > 0 && centroY02 < HEIGHT){
+            xCell = centroX02 * wfull / WIDTH / FULLSCREEN_CELLSIZE;
+            yCell = centroY02 * hfull / HEIGHT / FULLSCREEN_CELLSIZE;
+            patterns::blinker01(grid, xCell, yCell);
+        }
         
     }
     
