@@ -88,7 +88,7 @@ void gameOfLife::setup() {
 	grayImage02.allocate(kinect.width, kinect.height);
 	grayThreshNear.allocate(kinect.width, kinect.height);
 	grayThreshFar.allocate(kinect.width, kinect.height);
-	
+
 	//nearThreshold = 230;
 	//farThreshold = 70;
 	nearThreshold01 = 250;
@@ -143,7 +143,9 @@ void gameOfLife::update() {
 	// there is a new frame and we are connected
 	if(kinect.isFrameNew()) {
 		
-		// load grayscale depth image from the kinect source
+        //左右反転
+        //colorImg.mirror(false, true);
+        // load grayscale depth image from the kinect source
 		grayImage01.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
 		
 		// we do two thresholds - one for the far plane and one for the near plane
@@ -326,12 +328,12 @@ void gameOfLife::draw() {
         ofSetColor(255, 0, 0, 100);
         grayImage01.draw(10 + 256 * SCREENRATE, 320, 400, 300);
         ofSetColor(255, 255, 0, 100);
-        contourFinder01.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+        //contourFinder01.draw(10 + 256 * SCREENRATE, 320, 400, 300);
         
         ofSetColor(0, 255, 0, 100);
         grayImage02.draw(10 + 256 * SCREENRATE, 320, 400, 300);
         ofSetColor(0, 255, 255, 100);
-        contourFinder02.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+        //contourFinder02.draw(10 + 256 * SCREENRATE, 320, 400, 300);
 
         // draw instructions
         ofSetColor(255, 255, 255);
@@ -364,15 +366,29 @@ void gameOfLife::draw() {
 //        init(ofGetScreenWidth(), ofGetScreenHeight(), FULLSCREEN_CELLSIZE);
         int wfull = ofGetScreenWidth();
         int hfull = ofGetScreenHeight();
-        ofSetColor(255, 0, 0, 50);
+        ofSetColor(255, 0, 0, 100);
         grayImage01.draw(0, 0, wfull, hfull);
         ofSetColor(255, 255, 0, 100);
         contourFinder01.draw(0, 0, wfull, hfull);
-        
+        ofSetColor(255, 0, 0,100);
+        // draw Centorid of contour
+        int centroX = contourFinder01.blobs[0].centroid.x;
+        int centroY = contourFinder01.blobs[0].centroid.y;
+        ofRect(centroX,centroY,50,50);
+        if(centroX > 0 && centroX < WIDTH && centroY > 0 && centroY < HEIGHT){
+            int xCell = centroX * wfull / WIDTH / FULLSCREEN_CELLSIZE;
+            int yCell = centroY * hfull / HEIGHT / FULLSCREEN_CELLSIZE;
+            patterns::glider01(grid, xCell, yCell);
+            //patterns::glider01(grid, 100, 20);
+        }
+
         ofSetColor(0, 255, 0, 100);
         grayImage02.draw(0, 0, wfull, hfull);
         ofSetColor(0, 255, 255, 50);
         contourFinder02.draw(0, 0, wfull, hfull);
+        ofSetColor(0, 255, 0);
+        // draw Centorid of contour
+        ofRect(contourFinder02.blobs[0].centroid.x,contourFinder02.blobs[0].centroid.y,50,50);
         
     }
     
