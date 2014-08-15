@@ -12,7 +12,7 @@
 #include "patternDetect.h"
 
 const int WIDTH = 800;
-const int HEIGHT = 500;
+const int HEIGHT = 600;
 //const int WIDTH = 1024;
 //const int HEIGHT = 728;
 const int CELLSIZE = 6;
@@ -34,7 +34,9 @@ vector<resPattern>::iterator resData;
 
 // by kuha for screen size 256 * x
 const int SCREENRATE = 1;
-
+// fullscreen width, height
+int wfull = 640;
+int hfull = 480;
 /*//////////////////////////////////*/
 
 ofImage myImage;
@@ -49,7 +51,10 @@ void gameOfLife::setup() {
     
 // by kuha Mix color setting
     ofEnableSmoothing();
-    glEnable(GL_BLEND);
+//    glEnable(GL_BLEND);
+    ofEnableAlphaBlending();
+    //ofEnableBlendMode(OF_BLENDMODE_ADD);
+    ofEnableBlendMode(OF_BLENDMODE_ALPHA);
     
     init(WIDTH, HEIGHT, CELLSIZE);
     
@@ -91,14 +96,18 @@ void gameOfLife::setup() {
 
 	//nearThreshold = 230;
 	//farThreshold = 70;
+
+    /*
 	nearThreshold01 = 250;
 	farThreshold01 = 240;
 	nearThreshold02 = 240;
 	farThreshold02 = 230;
+     */
+	nearThreshold01 = 230;
+	farThreshold01 = 220;
+	nearThreshold02 = 220;
+	farThreshold02 = 210;
 	bThreshWithOpenCV = true;
-	
-	//ofSetFrameRate(60);
-	//ofSetFrameRate(30);
 	
 	// zero the tilt on startup
 	angle = 0;
@@ -136,7 +145,8 @@ void gameOfLife::update() {
     }
 //----------------------------
 // kinect update
-	ofBackground(100, 100, 100);
+	//ofBackground(100, 100, 100);
+	ofBackground(255, 255, 100);
 	
 	kinect.update();
     
@@ -178,9 +188,9 @@ void gameOfLife::update() {
 		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
 		// also, find holes is set to true so we will get interior contours as well....
 		contourFinder01.findContours(grayImage01, 10, (kinect.width*kinect.height)/2, 20, false);
-    }
+//    }
     
-    if(kinect.isFrameNew()) {
+//    if(kinect.isFrameNew()) {
         
         // load grayscale depth image from the kinect source
         grayImage02.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
@@ -359,46 +369,61 @@ void gameOfLife::draw() {
         if(kinect.hasCamTiltControl()) {
             reportStream << "press UP and DOWN to change the tilt angle: " << angle << " degrees" << endl
             << "press 1-5 & 0 to change the led mode" << endl;
-            ofDrawBitmapString(reportStream.str(), 20, 652);
+            //ofDrawBitmapString(reportStream.str(), 20, 652);
+            ofDrawBitmapString(reportStream.str(), 20, 400);
         }
     }
     else{
-//        init(ofGetScreenWidth(), ofGetScreenHeight(), FULLSCREEN_CELLSIZE);
-        int wfull = ofGetScreenWidth();
-        int hfull = ofGetScreenHeight();
         int xCell, yCell;
-        ofSetColor(255, 0, 0, 100);
-        grayImage01.draw(0, 0, wfull, hfull);
+        ofSetColor(255, 0, 0, 150);
+//        grayImage01.draw(0, 0, wfull, hfull);
         ofSetColor(255, 255, 0, 100);
-        contourFinder01.draw(0, 0, wfull, hfull);
-//        ofSetColor(255, 0, 0,100);
+//        contourFinder01.draw(0, 0, wfull, hfull);
+
         // draw Centorid of contour01
-        int centroX01 = contourFinder01.blobs[0].centroid.x;
-        int centroY01 = contourFinder01.blobs[0].centroid.y;
-        ofRect(centroX01 * wfull / WIDTH, centroY01 * hfull / HEIGHT,50,50);
-        if(centroX01 > 0 && centroX01 < WIDTH && centroY01 > 0 && centroY01 < HEIGHT){
-            xCell = centroX01 * wfull / WIDTH / FULLSCREEN_CELLSIZE;
-            yCell = centroY01 * hfull / HEIGHT / FULLSCREEN_CELLSIZE;
-//            patterns::glider01(grid, xCell, yCell);
+        if (ofGetFrameNum() % TICK_INTERVAL == 0 && active) {
+            int centroX01 = contourFinder01.blobs[0].centroid.x * wfull / WIDTH;
+            int centroY01 = contourFinder01.blobs[0].centroid.y * hfull / HEIGHT;
+            //ofSetColor(0, 255, 255, 256);
+            //ofCircle(centroX01, centroY01, 30); // Centoid draw
+            if(centroX01 > 0 && centroX01 < wfull && centroY01 > 0 && centroY01 < hfull){
+                xCell = centroX01 * cols / wfull;
+                yCell = centroY01 * rows / hfull;
+                //patterns::glider01(grid, xCell, yCell);
+            }
         }
 
         ofSetColor(0, 255, 0, 100);
         grayImage02.draw(0, 0, wfull, hfull);
         ofSetColor(0, 255, 255, 50);
         contourFinder02.draw(0, 0, wfull, hfull);
-//        ofSetColor(0, 255, 0);
-        // draw Centorid of contour
-        ofRect(contourFinder02.blobs[0].centroid.x,contourFinder02.blobs[0].centroid.y,50,50);
-        // draw Centorid of contour01
-        int centroX02 = contourFinder02.blobs[0].centroid.x;
-        int centroY02 = contourFinder02.blobs[0].centroid.y;
-        ofRect(centroX02 * wfull / WIDTH ,centroY02 * hfull / HEIGHT ,50,50);
-        if(centroX02 > 0 && centroX02 < WIDTH && centroY02 > 0 && centroY02 < HEIGHT){
-            xCell = centroX02 * wfull / WIDTH / FULLSCREEN_CELLSIZE;
-            yCell = centroY02 * hfull / HEIGHT / FULLSCREEN_CELLSIZE;
-            patterns::blinker01(grid, xCell, yCell);
+        // draw Centorid of contour02
+        int centroX02;
+        int centroY02;
+        ofSetColor(0, 0, 255, 256);
+        ofSetLineWidth(5);
+        for( int i = 0; i < 3; i++){
+            centroX02 = contourFinder02.blobs[i].centroid.x * wfull / WIDTH * 1.25;
+            centroY02 = contourFinder02.blobs[i].centroid.y * hfull / HEIGHT * 1.25;
+            if(centroX02 > 0 && centroX02 < wfull && centroY02 > 0 && centroY02 < hfull){
+                xCell = centroX02 * cols / wfull;
+                yCell = centroY02 * rows / hfull;
+                ofCircle(centroX02, centroY02, 30); // Centroid draw
+                if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
+                    //patterns::blinker01(grid, xCell, yCell);
+                    patterns::glider01(grid, xCell, yCell);
+                }
+            }
         }
-        
+        ofSetLineWidth(1);
+
+        stringstream reportScreen;
+        reportScreen << "wfull=" << wfull << ",hfull=" << hfull << ", cols=" << cols << ",rows=" << rows << endl
+        << "centroX02=" << centroX02 << ",centroY02=" << centroY02 << endl
+        << "xCell=" << xCell << ",yCell=" << yCell << endl;
+        ofSetColor(255, 255, 255);
+        ofDrawBitmapString(reportScreen.str(), 20, 100);
+
     }
     
 	
@@ -513,6 +538,8 @@ void gameOfLife::goFullScreen() {
     fullScreen = !fullScreen;
     if (fullScreen) {
         init(ofGetScreenWidth(), ofGetScreenHeight(), FULLSCREEN_CELLSIZE);
+        wfull = ofGetScreenWidth();
+        hfull = ofGetScreenHeight();
     } else {
         init(WIDTH, HEIGHT, CELLSIZE);
     }
