@@ -11,9 +11,10 @@
 #include "patterns.h"
 #include "patternDetect.h"
 
-
 const int WIDTH = 800;
-const int HEIGHT = 500;
+const int HEIGHT = 600;
+//const int WIDTH = 1024;
+//const int HEIGHT = 728;
 const int CELLSIZE = 6;
 const int FULLSCREEN_CELLSIZE = 8;
 const int TICK_INTERVAL = 6;
@@ -31,6 +32,11 @@ patternDetect *glider3;
 vector<resPattern> datas;
 vector<resPattern>::iterator resData;
 
+// by kuha for screen size 256 * x
+const int SCREENRATE = 1;
+// fullscreen width, height
+int wfull = 640;
+int hfull = 480;
 /*//////////////////////////////////*/
 
 ofImage myImage;
@@ -42,6 +48,13 @@ void gameOfLife::setup() {
     
     ofSetFullscreen(false);
     ofSetWindowShape(WIDTH, HEIGHT);
+    
+// by kuha Mix color setting
+    ofEnableSmoothing();
+//    glEnable(GL_BLEND);
+    ofEnableAlphaBlending();
+    //ofEnableBlendMode(OF_BLENDMODE_ADD);
+    ofEnableBlendMode(OF_BLENDMODE_ALPHA);
     
     init(WIDTH, HEIGHT, CELLSIZE);
     
@@ -80,17 +93,21 @@ void gameOfLife::setup() {
 	grayImage02.allocate(kinect.width, kinect.height);
 	grayThreshNear.allocate(kinect.width, kinect.height);
 	grayThreshFar.allocate(kinect.width, kinect.height);
-	
+
 	//nearThreshold = 230;
 	//farThreshold = 70;
+
+    /*
 	nearThreshold01 = 250;
 	farThreshold01 = 240;
 	nearThreshold02 = 240;
 	farThreshold02 = 230;
+     */
+	nearThreshold01 = 230;
+	farThreshold01 = 220;
+	nearThreshold02 = 220;
+	farThreshold02 = 210;
 	bThreshWithOpenCV = true;
-	
-	//ofSetFrameRate(60);
-	//ofSetFrameRate(30);
 	
 	// zero the tilt on startup
 	angle = 0;
@@ -124,19 +141,21 @@ void gameOfLife::update() {
         datas.push_back(glider1->detection(grid, rows, cols));
         datas.push_back(glider2->detection(grid, rows, cols));
         datas.push_back(glider3->detection(grid, rows, cols));
-        oscSending(datas);
+//        oscSending(datas);
     }
-    
-    //----------------------------
-    // kinect update
-	ofBackground(100, 100, 100);
+//----------------------------
+// kinect update
+	//ofBackground(100, 100, 100);
+	ofBackground(255, 255, 100);
 	
 	kinect.update();
     
 	// there is a new frame and we are connected
 	if(kinect.isFrameNew()) {
 		
-		// load grayscale depth image from the kinect source
+        //左右反転
+        //colorImg.mirror(false, true);
+        // load grayscale depth image from the kinect source
 		grayImage01.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
 		
 		// we do two thresholds - one for the far plane and one for the near plane
@@ -169,9 +188,9 @@ void gameOfLife::update() {
 		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
 		// also, find holes is set to true so we will get interior contours as well....
 		contourFinder01.findContours(grayImage01, 10, (kinect.width*kinect.height)/2, 20, false);
-    }
+//    }
     
-    if(kinect.isFrameNew()) {
+//    if(kinect.isFrameNew()) {
         
         // load grayscale depth image from the kinect source
         grayImage02.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
@@ -212,12 +231,12 @@ void gameOfLife::update() {
 }
 
 /*今は参照渡し風に書いている　複数のインスタンスを渡してバグが生まれたら対応*/
+/*
 void gameOfLife::oscSending(vector<resPattern> &datas) {
     for(resData = datas.begin(); resData != datas.end(); ++resData) {
         std::stringstream result_x, result_y;
         std::copy(&*resData->x.begin(), &*resData->x.end(), std::ostream_iterator<int>(result_x, ","));
         std::copy(&*resData->y.begin(), &*resData->y.end(), std::ostream_iterator<int>(result_y, ","));
-        /*
          ofxOscMessage mx, my;
          string textName = "/";
          textName += resData->patternName;
@@ -234,12 +253,9 @@ void gameOfLife::oscSending(vector<resPattern> &datas) {
          //メッセージを送信
          sender.sendMessage( mx );
          sender.sendMessage( my );
-         */
     };
-    
-    
 }
-
+*/
 
 void gameOfLife::tick() {
 	// get active neighbors for each cell
@@ -281,10 +297,12 @@ void gameOfLife::draw() {
 		for (int j=0; j<rows; j++) {
             cell thisCell = grid[i][j];
 			ofSetColor(200, 200, 200);
+			//ofSetColor(0, 255, 255);
 			ofNoFill();
             //			ofRect(i*cellWidth, j*cellHeight, cellWidth, cellHeight);
             if (thisCell.currState == true) {
-				ofSetColor(thisCell.color.r, thisCell.color.g, thisCell.color.b, 30);
+				//ofSetColor(thisCell.color.r, thisCell.color.g, thisCell.color.b, 30); // dark cell
+				ofSetColor(thisCell.color.r, thisCell.color.g, thisCell.color.b, 130); // bright cell
 				ofFill();
                 myImage.ofImage_::draw((float)(i*cellWidth), (float)(j*cellHeight), cellWidth*2.0, cellHeight*2.0);
                 ofRect(i*cellWidth, j*cellHeight, cellWidth, cellHeight);
@@ -305,56 +323,116 @@ void gameOfLife::draw() {
         datas.clear();
     }
     
-    //------------------------------------
-    // kinect draw
+//------------------------------------
+// kinect draw
 	ofSetColor(255, 255, 255);
 	
     //kinect.draw(0, 0, kinect.width, kinect.height);
     //kinect.drawDepth(kinect.width, 0, kinect.width, kinect.height);
     
     // draw from the live kinect
-    kinect.drawDepth(10 + 1024, 10, 400, 300);
-    kinect.draw(420 + 1024, 10, 400, 300);
+    if (!fullScreen) {
+        kinect.drawDepth(10 + 256 * SCREENRATE, 10, 400, 300);
+        kinect.draw(420 + 256 * SCREENRATE, 10, 400, 300);
+
+        ofSetColor(255, 0, 0, 100);
+        grayImage01.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+        ofSetColor(255, 255, 0, 100);
+        //contourFinder01.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+        
+        ofSetColor(0, 255, 0, 100);
+        grayImage02.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+        ofSetColor(0, 255, 255, 100);
+        //contourFinder02.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+
+        // draw instructions
+        ofSetColor(255, 255, 255);
+        //ofSetColor(255, 255, 0);
+        stringstream reportStream;
+        
+        if(kinect.hasAccelControl()) {
+            reportStream << "accel is: " << ofToString(kinect.getMksAccel().x, 2) << " / "
+            << ofToString(kinect.getMksAccel().y, 2) << " / "
+            << ofToString(kinect.getMksAccel().z, 2) << endl;
+        } else {
+            reportStream << "Note: this is a newer Xbox Kinect or Kinect For Windows device," << endl
+            << "motor / led / accel controls are not currently supported" << endl << endl;
+        }
+        
+        reportStream << "press p to switch between images and point cloud, rotate the point cloud with the mouse" << endl
+        << "using opencv threshold = " << bThreshWithOpenCV <<" (press spacebar)" << endl
+        << "set near threshold " << nearThreshold01 << " (press: + -)" << endl
+        << "set far threshold " << farThreshold01 << " (press: < >) num blobs found " << contourFinder01.nBlobs
+        << ", fps: " << ofGetFrameRate() << endl
+        << "press c to close the connection and o to open it again, connection is: " << kinect.isConnected() << endl;
+        
+        if(kinect.hasCamTiltControl()) {
+            reportStream << "press UP and DOWN to change the tilt angle: " << angle << " degrees" << endl
+            << "press 1-5 & 0 to change the led mode" << endl;
+            //ofDrawBitmapString(reportStream.str(), 20, 652);
+            ofDrawBitmapString(reportStream.str(), 20, 400);
+        }
+    }
+    else{
+        int xCell, yCell;
+        ofSetColor(255, 0, 0, 150);
+        grayImage01.draw(0, 0, wfull, hfull);
+//        ofSetColor(255, 0, 0, 100);
+//        contourFinder01.draw(0, 0, wfull, hfull);
+        // draw Centorid of contour01
+        int centroX01;
+        int centroY01;
+        ofSetColor(255, 0, 255, 255);
+        ofSetLineWidth(5);
+        for( int i = 0; i < 3; i++){
+            centroX01 = contourFinder01.blobs[i].centroid.x * wfull / WIDTH * 1.25;
+            centroY01 = contourFinder01.blobs[i].centroid.y * hfull / HEIGHT * 1.25;
+            if(centroX01 > 0 && centroX01 < wfull && centroY01 > 0 && centroY01 < hfull){
+                xCell = centroX01 * cols / wfull;
+                yCell = centroY01 * rows / hfull;
+                ofCircle(centroX01, centroY01, 30); // Centroid draw
+                if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
+                    //patterns::blinker01(grid, xCell, yCell);
+                    patterns::blinker01(grid, xCell, yCell);
+                }
+            }
+        }
+        ofSetLineWidth(1);
+
+        ofSetColor(0, 255, 0, 100);
+        grayImage02.draw(0, 0, wfull, hfull);
+//        ofSetColor(0, 255, 0, 50);
+//        contourFinder02.draw(0, 0, wfull, hfull);
+        // draw Centorid of contour02
+        int centroX02;
+        int centroY02;
+        ofSetColor(0, 255, 255, 255);
+        ofSetLineWidth(5);
+        for( int i = 0; i < 3; i++){
+            centroX02 = contourFinder02.blobs[i].centroid.x * wfull / WIDTH * 1.25;
+            centroY02 = contourFinder02.blobs[i].centroid.y * hfull / HEIGHT * 1.25;
+            if(centroX02 > 0 && centroX02 < wfull && centroY02 > 0 && centroY02 < hfull){
+                xCell = centroX02 * cols / wfull;
+                yCell = centroY02 * rows / hfull;
+                ofCircle(centroX02, centroY02, 30); // Centroid draw
+                if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
+                    //patterns::blinker01(grid, xCell, yCell);
+                    patterns::glider01(grid, xCell, yCell);
+                }
+            }
+        }
+        ofSetLineWidth(1);
+
+        stringstream reportScreen;
+        reportScreen << "wfull=" << wfull << ",hfull=" << hfull << ", cols=" << cols << ",rows=" << rows << endl
+        << "centroX02=" << centroX02 << ",centroY02=" << centroY02 << endl
+        << "xCell=" << xCell << ",yCell=" << yCell << endl;
+        ofSetColor(255, 255, 255);
+        ofDrawBitmapString(reportScreen.str(), 20, 100);
+
+    }
     
-    ofSetColor(255, 0, 0, 50);
-    grayImage01.draw(10 + 1024, 320, 400, 300);
-    ofSetColor(255, 255, 0, 100);
-    contourFinder01.draw(10 + 1024, 320, 400, 300);
-    
-    ofSetColor(0, 0, 255, 50);
-    //grayImage02.draw(420, 320, 400, 300);
-    grayImage02.draw(10 + 1024, 320, 400, 300);
-    ofSetColor(0, 255, 255, 100);
-    contourFinder02.draw(10 + 1024, 320, 400, 300);
 	
-	// draw instructions
-	ofSetColor(255, 255, 255);
-	//ofSetColor(255, 255, 0);
-	stringstream reportStream;
-    
-    if(kinect.hasAccelControl()) {
-        reportStream << "accel is: " << ofToString(kinect.getMksAccel().x, 2) << " / "
-        << ofToString(kinect.getMksAccel().y, 2) << " / "
-        << ofToString(kinect.getMksAccel().z, 2) << endl;
-    } else {
-        reportStream << "Note: this is a newer Xbox Kinect or Kinect For Windows device," << endl
-		<< "motor / led / accel controls are not currently supported" << endl << endl;
-    }
-    
-	reportStream << "press p to switch between images and point cloud, rotate the point cloud with the mouse" << endl
-	<< "using opencv threshold = " << bThreshWithOpenCV <<" (press spacebar)" << endl
-	<< "set near threshold " << nearThreshold01 << " (press: + -)" << endl
-	<< "set far threshold " << farThreshold01 << " (press: < >) num blobs found " << contourFinder01.nBlobs
-	<< ", fps: " << ofGetFrameRate() << endl
-	<< "press c to close the connection and o to open it again, connection is: " << kinect.isConnected() << endl;
-    
-    if(kinect.hasCamTiltControl()) {
-    	reportStream << "press UP and DOWN to change the tilt angle: " << angle << " degrees" << endl
-        << "press 1-5 & 0 to change the led mode" << endl;
-    }
-    
-	ofDrawBitmapString(reportStream.str(), 20, 652);
-    
 }
 
 /*::::::::::::::::::::::::
@@ -372,7 +450,7 @@ void gameOfLife::drawingResPatterns(vector<resPattern> &datas, matchPattern &mPa
                         if (mPattern.pattern[mPattern.patternGrid[0] * i + j ] == 1) {
                             ofSetColor(paramsColor.r, paramsColor.g, paramsColor.b, 100);
                             ofFill();
-                            //              myImage.ofImage_::draw((float)((i + resData->x.at(h)) * cellWidth), (float)((j + resData->y.at(h)) * cellHeight), cellWidth*3.0, cellHeight*3.0);
+                                          myImage.ofImage_::draw((float)((i + resData->x.at(h)) * cellWidth), (float)((j + resData->y.at(h)) * cellHeight), cellWidth*3.0, cellHeight*3.0);
                             ofRect( (i + resData->x.at(h)) * cellWidth, (j + resData->y.at(h)) * cellHeight, cellWidth, cellHeight);
                             ofNoFill();
                         }
@@ -466,6 +544,8 @@ void gameOfLife::goFullScreen() {
     fullScreen = !fullScreen;
     if (fullScreen) {
         init(ofGetScreenWidth(), ofGetScreenHeight(), FULLSCREEN_CELLSIZE);
+        wfull = ofGetScreenWidth();
+        hfull = ofGetScreenHeight();
     } else {
         init(WIDTH, HEIGHT, CELLSIZE);
     }
