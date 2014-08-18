@@ -20,7 +20,7 @@ const int FULLSCREEN_CELLSIZE = 8;
 const int TICK_INTERVAL = 6;
 const int FRAMERATE = 30;
 
-/*//////////////////////////////////*/
+///////////////////////////////////
 // いくつかのグローバル変数//
 
 patternDetect *blink1;
@@ -31,16 +31,23 @@ patternDetect *glider3;
 
 vector<resPattern> datas;
 vector<resPattern>::iterator resData;
+///////////////////////////////////
 
-// by kuha for screen size 256 * x
+ofImage myImage;
+
+//------------------------
+// kinect
 const int SCREENRATE = 1;
 // fullscreen width, height
 int wfull = 640;
 int hfull = 480;
+//int wfull = 800;
+//int hfull = 600;
 int depth_min = 220;
-/*//////////////////////////////////*/
+int alphaGray = 30;
+int alphaSpring = 200;
+//------------------------
 
-ofImage myImage;
 
 void gameOfLife::setup() {
     fullScreen = false;
@@ -49,13 +56,6 @@ void gameOfLife::setup() {
     
     ofSetFullscreen(false);
     ofSetWindowShape(WIDTH, HEIGHT);
-    
-// by kuha Mix color setting
-    ofEnableSmoothing();
-//    glEnable(GL_BLEND);
-    ofEnableAlphaBlending();
-    //ofEnableBlendMode(OF_BLENDMODE_ADD);
-    ofEnableBlendMode(OF_BLENDMODE_ALPHA);
     
     init(WIDTH, HEIGHT, CELLSIZE);
     
@@ -68,54 +68,10 @@ void gameOfLife::setup() {
     
     //  sender.setup(HOST, PORT);
     
+    //-----------------------------------
+    // kinect
+    kinectSetup();
     //------------------------------------
-    // kinect setting
-	// enable depth->video image calibration
-	kinect.setRegistration(true);
-    
-	kinect.init();
-	//kinect.init(true); // shows infrared instead of RGB video image
-	//kinect.init(false, false); // disable video image (faster fps)
-	
-	kinect.open();		// opens first available kinect
-	//kinect.open(1);	// open a kinect by id, starting with 0 (sorted by serial # lexicographically))
-	//kinect.open("A00362A08602047A");	// open a kinect using it's unique serial #
-	
-	// print the intrinsic IR sensor values
-	if(kinect.isConnected()) {
-		ofLogNotice() << "sensor-emitter dist: " << kinect.getSensorEmitterDistance() << "cm";
-		ofLogNotice() << "sensor-camera dist:  " << kinect.getSensorCameraDistance() << "cm";
-		ofLogNotice() << "zero plane pixel size: " << kinect.getZeroPlanePixelSize() << "mm";
-		ofLogNotice() << "zero plane dist: " << kinect.getZeroPlaneDistance() << "mm";
-	}
-	
-	colorImg.allocate(kinect.width, kinect.height);
-	grayImage01.allocate(kinect.width, kinect.height);
-	grayImage02.allocate(kinect.width, kinect.height);
-	grayImage03.allocate(kinect.width, kinect.height);
-	grayThreshNear.allocate(kinect.width, kinect.height);
-	grayThreshFar.allocate(kinect.width, kinect.height);
-
-    /*
-     //nearThreshold = 230;
-     //farThreshold = 70;
-	nearThreshold01 = 250;
-	farThreshold01 = 240;
-	nearThreshold02 = 240;
-	farThreshold02 = 230;
-     */
-	nearThreshold01 = depth_min + 30;
-	farThreshold01 = depth_min + 20;
-	nearThreshold02 = depth_min + 20;
-	farThreshold02 = depth_min + 10;
-	nearThreshold03 = depth_min + 10;
-	farThreshold03 = depth_min;
-	bThreshWithOpenCV = true;
-	
-	// zero the tilt on startup
-	angle = 0;
-	kinect.setCameraTiltAngle(angle);
-    
 }
 
 void gameOfLife::init(int width, int height, int cellSize) {
@@ -144,158 +100,41 @@ void gameOfLife::update() {
         datas.push_back(glider1->detection(grid, rows, cols));
         datas.push_back(glider2->detection(grid, rows, cols));
         datas.push_back(glider3->detection(grid, rows, cols));
-//        oscSending(datas);
+        //        oscSending(datas);
     }
-//----------------------------
-// kinect update
-	//ofBackground(100, 100, 100);
-	ofBackground(255, 255, 100);
-	
-	kinect.update();
-    
-	// there is a new frame and we are connected
-	if(kinect.isFrameNew()) {
-		
-        //左右反転
-        //colorImg.mirror(false, true);
-
-        // 01 layer
-        // load grayscale depth image from the kinect source
-		grayImage01.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
-		
-		// we do two thresholds - one for the far plane and one for the near plane
-		// we then do a cvAnd to get the pixels which are a union of the two thresholds
-		if(bThreshWithOpenCV) {
-			grayThreshNear = grayImage01;
-			grayThreshFar = grayImage01;
-			grayThreshNear.threshold(nearThreshold01, true);
-			grayThreshFar.threshold(farThreshold01);
-			cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage01.getCvImage(), NULL);
-		} else {
-			
-			// or we do it ourselves - show people how they can work with the pixels
-			unsigned char * pix = grayImage01.getPixels();
-			
-			int numPixels = grayImage01.getWidth() * grayImage01.getHeight();
-			for(int i = 0; i < numPixels; i++) {
-				if(pix[i] < nearThreshold01 && pix[i] > farThreshold01) {
-					pix[i] = 255;
-					//pix[i] = 25;
-				} else {
-					pix[i] = 0;
-					//pix[i] = 23;
-				}
-			}
-		}
-		// update the cv images
-		grayImage01.flagImageChanged();
-		
-		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
-		// also, find holes is set to true so we will get interior contours as well....
-		contourFinder01.findContours(grayImage01, 10, (kinect.width*kinect.height)/2, 20, false);
-        
-        // 02 layer
-        // load grayscale depth image from the kinect source
-        grayImage02.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
-        
-        // we do two thresholds - one for the far plane and one for the near plane
-        // we then do a cvAnd to get the pixels which are a union of the two thresholds
-        if(bThreshWithOpenCV) {
-            grayThreshNear = grayImage02;
-            grayThreshFar = grayImage02;
-            grayThreshNear.threshold(nearThreshold02, true);
-            grayThreshFar.threshold(farThreshold02);
-            cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage02.getCvImage(), NULL);
-        } else {
-            
-            // or we do it ourselves - show people how they can work with the pixels
-            unsigned char * pix = grayImage02.getPixels();
-            
-            int numPixels = grayImage02.getWidth() * grayImage02.getHeight();
-            for(int i = 0; i < numPixels; i++) {
-                if(pix[i] < nearThreshold02 && pix[i] > farThreshold02) {
-                    pix[i] = 255;
-                    //pix[i] = 25;
-                } else {
-                    pix[i] = 0;
-                    //pix[i] = 23;
-                }
-            }
-        }
-        
-		// update the cv images
-        grayImage02.flagImageChanged();
-		
-		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
-		// also, find holes is set to true so we will get interior contours as well....
-        contourFinder02.findContours(grayImage02, 10, (kinect.width*kinect.height)/2, 20, false);
-
-        // 03 layer
-        // load grayscale depth image from the kinect source
-        grayImage03.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
-        
-        // we do two thresholds - one for the far plane and one for the near plane
-        // we then do a cvAnd to get the pixels which are a union of the two thresholds
-        if(bThreshWithOpenCV) {
-            grayThreshNear = grayImage03;
-            grayThreshFar = grayImage03;
-            grayThreshNear.threshold(nearThreshold03, true);
-            grayThreshFar.threshold(farThreshold03);
-            cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage03.getCvImage(), NULL);
-        } else {
-            
-            // or we do it ourselves - show people how they can work with the pixels
-            unsigned char * pix = grayImage03.getPixels();
-            
-            int numPixels = grayImage03.getWidth() * grayImage03.getHeight();
-            for(int i = 0; i < numPixels; i++) {
-                if(pix[i] < nearThreshold03 && pix[i] > farThreshold03) {
-                    pix[i] = 255;
-                    //pix[i] = 25;
-                } else {
-                    pix[i] = 0;
-                    //pix[i] = 23;
-                }
-            }
-        }
-        
-		// update the cv images
-        grayImage03.flagImageChanged();
-		
-		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
-		// also, find holes is set to true so we will get interior contours as well....
-        contourFinder03.findContours(grayImage03, 10, (kinect.width*kinect.height)/2, 20, false);
-
-    }
+    //---------------------------
+    // kinect
+    kinectUpdate();
+    //---------------------------
     
 }
 
 /*今は参照渡し風に書いている　複数のインスタンスを渡してバグが生まれたら対応*/
 /*
-void gameOfLife::oscSending(vector<resPattern> &datas) {
-    for(resData = datas.begin(); resData != datas.end(); ++resData) {
-        std::stringstream result_x, result_y;
-        std::copy(&*resData->x.begin(), &*resData->x.end(), std::ostream_iterator<int>(result_x, ","));
-        std::copy(&*resData->y.begin(), &*resData->y.end(), std::ostream_iterator<int>(result_y, ","));
-         ofxOscMessage mx, my;
-         string textName = "/";
-         textName += resData->patternName;
-         textName += "/";
-         string textX = textName + "x";
-         string textY = textName + "y";
-         
-         mx.setAddress(textX);
-         mx.addStringArg( result_x.str() );
-         
-         my.setAddress( textY );
-         my.addStringArg( result_y.str() );
-         
-         //メッセージを送信
-         sender.sendMessage( mx );
-         sender.sendMessage( my );
-    };
-}
-*/
+ void gameOfLife::oscSending(vector<resPattern> &datas) {
+ for(resData = datas.begin(); resData != datas.end(); ++resData) {
+ std::stringstream result_x, result_y;
+ std::copy(&*resData->x.begin(), &*resData->x.end(), std::ostream_iterator<int>(result_x, ","));
+ std::copy(&*resData->y.begin(), &*resData->y.end(), std::ostream_iterator<int>(result_y, ","));
+ ofxOscMessage mx, my;
+ string textName = "/";
+ textName += resData->patternName;
+ textName += "/";
+ string textX = textName + "x";
+ string textY = textName + "y";
+ 
+ mx.setAddress(textX);
+ mx.addStringArg( result_x.str() );
+ 
+ my.setAddress( textY );
+ my.addStringArg( result_y.str() );
+ 
+ //メッセージを送信
+ sender.sendMessage( mx );
+ sender.sendMessage( my );
+ };
+ }
+ */
 
 void gameOfLife::tick() {
 	// get active neighbors for each cell
@@ -331,7 +170,8 @@ void gameOfLife::makeNextStateCurrent() {
 }
 
 void gameOfLife::draw() {
-    ofBackground(0, 0, 0);
+
+    ofBackground(0, 0, 0, 0);
     //  ofEnableBlendMode(OF_BLENDMODE_ADD);
 	for (int i=0; i<cols; i++) {
 		for (int j=0; j<rows; j++) {
@@ -344,7 +184,7 @@ void gameOfLife::draw() {
 				//ofSetColor(thisCell.color.r, thisCell.color.g, thisCell.color.b, 30); // dark cell
 				ofSetColor(thisCell.color.r, thisCell.color.g, thisCell.color.b, 130); // bright cell
 				ofFill();
-                myImage.ofImage_::draw((float)(i*cellWidth), (float)(j*cellHeight), cellWidth*2.0, cellHeight*2.0);
+//                myImage.ofImage_::draw((float)(i*cellWidth), (float)(j*cellHeight), cellWidth*2.0, cellHeight*2.0);
                 ofRect(i*cellWidth, j*cellHeight, cellWidth, cellHeight);
 				ofNoFill();
 			}
@@ -362,147 +202,12 @@ void gameOfLife::draw() {
         /*レスデータはここでクリアする*/
         datas.clear();
     }
-    
-//------------------------------------
-// kinect draw
-	ofSetColor(255, 255, 255);
-	
-    //kinect.draw(0, 0, kinect.width, kinect.height);
-    //kinect.drawDepth(kinect.width, 0, kinect.width, kinect.height);
-    
-    // draw from the live kinect
-    if (!fullScreen) {
-        kinect.drawDepth(10 + 256 * SCREENRATE, 10, 400, 300);
-        kinect.draw(420 + 256 * SCREENRATE, 10, 400, 300);
 
-        ofSetColor(255, 0, 0, 100);
-        grayImage01.draw(10 + 256 * SCREENRATE, 320, 400, 300);
-        //ofSetColor(255, 255, 0, 100);
-        //contourFinder01.draw(10 + 256 * SCREENRATE, 320, 400, 300);
-        
-        ofSetColor(255, 255, 0, 100);
-        grayImage02.draw(10 + 256 * SCREENRATE, 320, 400, 300);
-        //ofSetColor(0, 255, 255, 100);
-        //contourFinder02.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+    //------------------------------------
+    // kinect
+    kinectDraw();
+    //------------------------------------
 
-        ofSetColor(0, 255, 0, 100);
-        grayImage03.draw(10 + 256 * SCREENRATE, 320, 400, 300);
-        //ofSetColor(0, 0, 255, 100);
-        //contourFinder03.draw(10 + 256 * SCREENRATE, 320, 400, 300);
-        
-        // draw instructions
-        ofSetColor(255, 255, 255);
-        //ofSetColor(255, 255, 0);
-        stringstream reportStream;
-        
-        if(kinect.hasAccelControl()) {
-            reportStream << "accel is: " << ofToString(kinect.getMksAccel().x, 2) << " / "
-            << ofToString(kinect.getMksAccel().y, 2) << " / "
-            << ofToString(kinect.getMksAccel().z, 2) << endl;
-        } else {
-            reportStream << "Note: this is a newer Xbox Kinect or Kinect For Windows device," << endl
-            << "motor / led / accel controls are not currently supported" << endl << endl;
-        }
-        
-        reportStream << "press p to switch between images and point cloud, rotate the point cloud with the mouse" << endl
-        << "using opencv threshold = " << bThreshWithOpenCV <<" (press spacebar)" << endl
-        << "set near threshold " << nearThreshold01 << " (press: + -)" << endl
-        << "set far threshold " << farThreshold01 << " (press: < >) num blobs found " << contourFinder01.nBlobs
-        << ", fps: " << ofGetFrameRate() << endl
-        << "press c to close the connection and o to open it again, connection is: " << kinect.isConnected() << endl;
-        
-        if(kinect.hasCamTiltControl()) {
-            reportStream << "press UP and DOWN to change the tilt angle: " << angle << " degrees" << endl
-            << "press 1-5 & 0 to change the led mode" << endl;
-            //ofDrawBitmapString(reportStream.str(), 20, 652);
-            ofDrawBitmapString(reportStream.str(), 20, 400);
-        }
-    }
-    else{
-        int xCell, yCell;
-        ofSetColor(255, 0, 0, 80);
-        grayImage01.draw(0, 0, wfull, hfull);
-//        ofSetColor(255, 0, 0, 100);
-//        contourFinder01.draw(0, 0, wfull, hfull);
-        // draw Centorid of contour01
-        int centroX01;
-        int centroY01;
-        ofSetColor(255, 0, 255, 255);
-        ofSetLineWidth(5);
-        for( int i = 0; i < 3; i++){
-            centroX01 = contourFinder01.blobs[i].centroid.x * wfull / WIDTH * 1.25;
-            centroY01 = contourFinder01.blobs[i].centroid.y * hfull / HEIGHT * 1.25;
-            if(centroX01 > 0 && centroX01 < wfull && centroY01 > 0 && centroY01 < hfull){
-                xCell = centroX01 * cols / wfull;
-                yCell = centroY01 * rows / hfull;
-                ofCircle(centroX01, centroY01, 30); // Centroid draw
-                if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
-                    //patterns::blinker01(grid, xCell, yCell);
-                    patterns::blinker01(grid, xCell, yCell);
-                }
-            }
-        }
-        ofSetLineWidth(1);
-
-        ofSetColor(0, 255, 0, 100);
-        grayImage02.draw(0, 0, wfull, hfull);
-//        ofSetColor(0, 255, 0, 50);
-//        contourFinder02.draw(0, 0, wfull, hfull);
-        // draw Centorid of contour02
-        int centroX02;
-        int centroY02;
-        ofSetColor(0, 255, 0, 255);
-        ofSetLineWidth(5);
-        for( int i = 0; i < 3; i++){
-            centroX02 = contourFinder02.blobs[i].centroid.x * wfull / WIDTH * 1.25;
-            centroY02 = contourFinder02.blobs[i].centroid.y * hfull / HEIGHT * 1.25;
-            if(centroX02 > 0 && centroX02 < wfull && centroY02 > 0 && centroY02 < hfull){
-                xCell = centroX02 * cols / wfull;
-                yCell = centroY02 * rows / hfull;
-                ofCircle(centroX02, centroY02, 30); // Centroid draw
-                if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
-                    //patterns::blinker01(grid, xCell, yCell);
-                    patterns::glider01(grid, xCell, yCell);
-                }
-            }
-        }
-        ofSetLineWidth(1);
-
-        ofSetColor(0, 0, 255, 120);
-        grayImage03.draw(0, 0, wfull, hfull);
-        //        ofSetColor(0, 255, 0, 50);
-        //        contourFinder02.draw(0, 0, wfull, hfull);
-        // draw Centorid of contour02
-        int centroX03;
-        int centroY03;
-        ofSetColor(0, 255, 255, 255);
-        ofSetLineWidth(5);
-        for( int i = 0; i < 3; i++){
-            centroX03 = contourFinder03.blobs[i].centroid.x * wfull / WIDTH * 1.25;
-            centroY03 = contourFinder03.blobs[i].centroid.y * hfull / HEIGHT * 1.25;
-            if(centroX03 > 0 && centroX03 < wfull && centroY03 > 0 && centroY03 < hfull){
-                xCell = centroX03 * cols / wfull;
-                yCell = centroY03 * rows / hfull;
-                ofCircle(centroX03, centroY03, 30); // Centroid draw
-                if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
-                    //patterns::blinker01(grid, xCell, yCell);
-                    patterns::glider01(grid, xCell, yCell);
-                }
-            }
-        }
-        ofSetLineWidth(1);
-        
-        stringstream reportScreen;
-        reportScreen << "wfull=" << wfull << ",hfull=" << hfull << ", cols=" << cols << ",rows=" << rows << endl
-        << "centroX02=" << centroX02 << ",centroY02=" << centroY02 << endl
-        << "xCell=" << xCell << ",yCell=" << yCell << endl
-        << "depth_min=" << depth_min << endl;
-        ofSetColor(255, 255, 255);
-        ofDrawBitmapString(reportScreen.str(), 20, 100);
-
-    }
-    
-	
 }
 
 /*::::::::::::::::::::::::
@@ -520,7 +225,7 @@ void gameOfLife::drawingResPatterns(vector<resPattern> &datas, matchPattern &mPa
                         if (mPattern.pattern[mPattern.patternGrid[0] * i + j ] == 1) {
                             ofSetColor(paramsColor.r, paramsColor.g, paramsColor.b, 100);
                             ofFill();
-                                          myImage.ofImage_::draw((float)((i + resData->x.at(h)) * cellWidth), (float)((j + resData->y.at(h)) * cellHeight), cellWidth*3.0, cellHeight*3.0);
+                            myImage.ofImage_::draw((float)((i + resData->x.at(h)) * cellWidth), (float)((j + resData->y.at(h)) * cellHeight), cellWidth*3.0, cellHeight*3.0);
                             ofRect( (i + resData->x.at(h)) * cellWidth, (j + resData->y.at(h)) * cellHeight, cellWidth, cellHeight);
                             ofNoFill();
                         }
@@ -655,7 +360,8 @@ void gameOfLife::keyPressed(int key) {
             patterns::pufferTrain(grid, cols/2 - 10, rows - 30);
             break;
             
-            // by kuha
+            //-------------------------
+            // for kinect by kuha
         case '1':
             patterns::glider01(grid, 100, 20);
             break;
@@ -665,23 +371,20 @@ void gameOfLife::keyPressed(int key) {
         case 'b':
             patterns::blinker01(grid, 50, 20);
             break;
-        case 'D':
-            depth_min = min(depth_min + 1,255);
+        case 'D': // 0:far -> 255:near
+            depth_min = min(depth_min + 1, 255);
             nearThreshold01 = depth_min + 20;
             farThreshold01 = depth_min + 10;
             nearThreshold02 = depth_min + 10;
             farThreshold02 = depth_min;
             break;
         case 'd':
-            depth_min = max(depth_min - 1,0);
+            depth_min = max(depth_min - 1, 0);
             nearThreshold01 = depth_min + 20;
             farThreshold01 = depth_min + 10;
             nearThreshold02 = depth_min + 10;
             farThreshold02 = depth_min;
             break;
-            
-            //-------------------------
-            // kinect
         case OF_KEY_UP:
             angle++;
             if(angle>30) angle=30;
@@ -692,6 +395,7 @@ void gameOfLife::keyPressed(int key) {
             if(angle<-30) angle=-30;
             kinect.setCameraTiltAngle(angle);
             break;
+            //-------------------------
             
         default:
             break;
@@ -700,10 +404,335 @@ void gameOfLife::keyPressed(int key) {
 
 //--------------------------------------------------------------
 // for kinect setting
-
+//------------------------------------
+// kinect setup
+void gameOfLife::kinectSetup() {
+    // Mix color setting
+    ofEnableSmoothing();
+    //    glEnable(GL_BLEND);
+    ofEnableAlphaBlending();
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
+    //ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+    
+    // enable depth->video image calibration
+	kinect.setRegistration(true);
+    
+	kinect.init();
+	//kinect.init(true); // shows infrared instead of RGB video image
+	//kinect.init(false, false); // disable video image (faster fps)
+	
+	kinect.open();		// opens first available kinect
+	//kinect.open(1);	// open a kinect by id, starting with 0 (sorted by serial # lexicographically))
+	//kinect.open("A00362A08602047A");	// open a kinect using it's unique serial #
+	
+	// print the intrinsic IR sensor values
+	if(kinect.isConnected()) {
+		ofLogNotice() << "sensor-emitter dist: " << kinect.getSensorEmitterDistance() << "cm";
+		ofLogNotice() << "sensor-camera dist:  " << kinect.getSensorCameraDistance() << "cm";
+		ofLogNotice() << "zero plane pixel size: " << kinect.getZeroPlanePixelSize() << "mm";
+		ofLogNotice() << "zero plane dist: " << kinect.getZeroPlaneDistance() << "mm";
+	}
+	
+	colorImg.allocate(kinect.width, kinect.height);
+	grayImage01.allocate(kinect.width, kinect.height);
+	grayImage02.allocate(kinect.width, kinect.height);
+	grayImage03.allocate(kinect.width, kinect.height);
+	grayThreshNear.allocate(kinect.width, kinect.height);
+	grayThreshFar.allocate(kinect.width, kinect.height);
+    
+    /*
+     //nearThreshold = 230;
+     //farThreshold = 70;
+     nearThreshold01 = 250;
+     farThreshold01 = 240;
+     nearThreshold02 = 240;
+     farThreshold02 = 230;
+     */
+	nearThreshold01 = depth_min + 30;
+	farThreshold01 = depth_min + 20;
+	nearThreshold02 = depth_min + 20;
+	farThreshold02 = depth_min + 10;
+	nearThreshold03 = depth_min + 10;
+	farThreshold03 = depth_min;
+	bThreshWithOpenCV = true;
+	
+	// zero the tilt on startup
+	angle = 0;
+	kinect.setCameraTiltAngle(angle);
+    
+}
+//------------------------------------
+// kinect update
+void gameOfLife::kinectUpdate() {
+	//ofBackground(100, 100, 100);
+	//ofBackground(255, 255, 100);
+	
+	kinect.update();
+    
+	// there is a new frame and we are connected
+	if(kinect.isFrameNew()) {
+		
+        //左右反転
+        //colorImg.mirror(false, true);
+        
+        // 01 layer
+        // load grayscale depth image from the kinect source
+		grayImage01.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
+		
+		// we do two thresholds - one for the far plane and one for the near plane
+		// we then do a cvAnd to get the pixels which are a union of the two thresholds
+		if(bThreshWithOpenCV) {
+			grayThreshNear = grayImage01;
+			grayThreshFar = grayImage01;
+			grayThreshNear.threshold(nearThreshold01, true);
+			grayThreshFar.threshold(farThreshold01);
+			cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage01.getCvImage(), NULL);
+		} else {
+			
+			// or we do it ourselves - show people how they can work with the pixels
+			unsigned char * pix = grayImage01.getPixels();
+			
+			int numPixels = grayImage01.getWidth() * grayImage01.getHeight();
+			for(int i = 0; i < numPixels; i++) {
+				if(pix[i] < nearThreshold01 && pix[i] > farThreshold01) {
+					pix[i] = 255;
+					//pix[i] = 25;
+				} else {
+					pix[i] = 0;
+					//pix[i] = 23;
+				}
+			}
+		}
+		// update the cv images
+		grayImage01.flagImageChanged();
+		
+		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
+		// also, find holes is set to true so we will get interior contours as well....
+		contourFinder01.findContours(grayImage01, 10, (kinect.width*kinect.height)/2, 20, false);
+        
+        // 02 layer
+        // load grayscale depth image from the kinect source
+        grayImage02.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
+        
+        // we do two thresholds - one for the far plane and one for the near plane
+        // we then do a cvAnd to get the pixels which are a union of the two thresholds
+        if(bThreshWithOpenCV) {
+            grayThreshNear = grayImage02;
+            grayThreshFar = grayImage02;
+            grayThreshNear.threshold(nearThreshold02, true);
+            grayThreshFar.threshold(farThreshold02);
+            cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage02.getCvImage(), NULL);
+        } else {
+            
+            // or we do it ourselves - show people how they can work with the pixels
+            unsigned char * pix = grayImage02.getPixels();
+            
+            int numPixels = grayImage02.getWidth() * grayImage02.getHeight();
+            for(int i = 0; i < numPixels; i++) {
+                if(pix[i] < nearThreshold02 && pix[i] > farThreshold02) {
+                    pix[i] = 255;
+                    //pix[i] = 25;
+                } else {
+                    pix[i] = 0;
+                    //pix[i] = 23;
+                }
+            }
+        }
+        
+		// update the cv images
+        grayImage02.flagImageChanged();
+		
+		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
+		// also, find holes is set to true so we will get interior contours as well....
+        contourFinder02.findContours(grayImage02, 10, (kinect.width*kinect.height)/2, 20, false);
+        
+        // 03 layer
+        // load grayscale depth image from the kinect source
+        grayImage03.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
+        
+        // we do two thresholds - one for the far plane and one for the near plane
+        // we then do a cvAnd to get the pixels which are a union of the two thresholds
+        if(bThreshWithOpenCV) {
+            grayThreshNear = grayImage03;
+            grayThreshFar = grayImage03;
+            grayThreshNear.threshold(nearThreshold03, true);
+            grayThreshFar.threshold(farThreshold03);
+            cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage03.getCvImage(), NULL);
+        } else {
+            
+            // or we do it ourselves - show people how they can work with the pixels
+            unsigned char * pix = grayImage03.getPixels();
+            
+            int numPixels = grayImage03.getWidth() * grayImage03.getHeight();
+            for(int i = 0; i < numPixels; i++) {
+                if(pix[i] < nearThreshold03 && pix[i] > farThreshold03) {
+                    pix[i] = 255;
+                    //pix[i] = 25;
+                } else {
+                    pix[i] = 0;
+                    //pix[i] = 23;
+                }
+            }
+        }
+        
+		// update the cv images
+        grayImage03.flagImageChanged();
+		
+		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
+		// also, find holes is set to true so we will get interior contours as well....
+        contourFinder03.findContours(grayImage03, 10, (kinect.width*kinect.height)/2, 20, false);
+        
+    }
+}
+//---------------------
+// kinect draw
+void gameOfLife::kinectDraw() {
+	ofSetColor(255, 255, 255);
+    //    ofBackground(0, 0, 0, 0);
+	
+    //kinect.draw(0, 0, kinect.width, kinect.height);
+    //kinect.drawDepth(kinect.width, 0, kinect.width, kinect.height);
+    
+    // draw from the live kinect
+    if (!fullScreen) {
+        kinect.drawDepth(10 + 256 * SCREENRATE, 10, 400, 300);
+        kinect.draw(420 + 256 * SCREENRATE, 10, 400, 300);
+        
+        ofSetColor(255, 0, 0, 100);
+        grayImage01.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+        //ofSetColor(255, 255, 0, 100);
+        //contourFinder01.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+        
+        ofSetColor(0, 255, 0, 100);
+        grayImage02.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+        //ofSetColor(0, 255, 255, 100);
+        //contourFinder02.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+        
+        ofSetColor(0, 0, 255, 100);
+        grayImage03.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+        //ofSetColor(0, 0, 255, 100);
+        //contourFinder03.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+        
+        // draw instructions
+        ofSetColor(255, 255, 255);
+        //ofSetColor(255, 255, 0);
+        stringstream reportStream;
+        
+        if(kinect.hasAccelControl()) {
+            reportStream << "accel is: " << ofToString(kinect.getMksAccel().x, 2) << " / "
+            << ofToString(kinect.getMksAccel().y, 2) << " / "
+            << ofToString(kinect.getMksAccel().z, 2) << endl;
+        } else {
+            reportStream << "Note: this is a newer Xbox Kinect or Kinect For Windows device," << endl
+            << "motor / led / accel controls are not currently supported" << endl << endl;
+        }
+        
+        reportStream << "press p to switch between images and point cloud, rotate the point cloud with the mouse" << endl
+        << "using opencv threshold = " << bThreshWithOpenCV <<" (press spacebar)" << endl
+        << "set near threshold " << nearThreshold01 << " (press: + -)" << endl
+        << "set far threshold " << farThreshold01 << " (press: < >) num blobs found " << contourFinder01.nBlobs
+        << ", fps: " << ofGetFrameRate() << endl
+        << "press c to close the connection and o to open it again, connection is: " << kinect.isConnected() << endl;
+        
+        if(kinect.hasCamTiltControl()) {
+            reportStream << "press UP and DOWN to change the tilt angle: " << angle << " degrees" << endl
+            << "press 1-5 & 0 to change the led mode" << endl;
+            //ofDrawBitmapString(reportStream.str(), 20, 652);
+            ofDrawBitmapString(reportStream.str(), 20, 400);
+        }
+    }
+    else{
+        int xCell, yCell;
+        
+        ofSetColor(255, 0, 0, alphaGray);
+        grayImage01.draw(0, 0, wfull, hfull);
+        //        ofSetColor(255, 0, 0, 100);
+        //        contourFinder01.draw(0, 0, wfull, hfull);
+        // draw Centorid of contour01
+        int centroX01;
+        int centroY01;
+        ofSetColor(255, 0, 255, alphaSpring);
+        ofSetLineWidth(4);
+        for( int i = 0; i < 3; i++){
+            centroX01 = contourFinder01.blobs[i].centroid.x * wfull / WIDTH * 1.25;
+            centroY01 = contourFinder01.blobs[i].centroid.y * hfull / HEIGHT * 1.25;
+            if(centroX01 > 0 && centroX01 < wfull && centroY01 > 0 && centroY01 < hfull){
+                xCell = centroX01 * cols / wfull;
+                yCell = centroY01 * rows / hfull;
+                ofCircle(centroX01, centroY01, 30); // Centroid draw
+                if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
+                    //patterns::blinker01(grid, xCell, yCell);
+                    patterns::blinker01(grid, xCell, yCell);
+                }
+            }
+        }
+        ofSetLineWidth(1);
+        
+        ofSetColor(0, 255, 0, alphaGray);
+        grayImage02.draw(0, 0, wfull, hfull);
+        //        ofSetColor(0, 255, 0, 50);
+        //        contourFinder02.draw(0, 0, wfull, hfull);
+        // draw Centorid of contour02
+        int centroX02;
+        int centroY02;
+        ofSetColor(255, 255, 0, alphaSpring);
+        ofSetLineWidth(4);
+        for( int i = 0; i < 3; i++){
+            centroX02 = contourFinder02.blobs[i].centroid.x * wfull / WIDTH * 1.25;
+            centroY02 = contourFinder02.blobs[i].centroid.y * hfull / HEIGHT * 1.25;
+            if(centroX02 > 0 && centroX02 < wfull && centroY02 > 0 && centroY02 < hfull){
+                xCell = centroX02 * cols / wfull;
+                yCell = centroY02 * rows / hfull;
+                ofCircle(centroX02, centroY02, 30); // Centroid draw
+                if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
+                    //patterns::blinker01(grid, xCell, yCell);
+                    patterns::glider01(grid, xCell, yCell);
+                }
+            }
+        }
+        ofSetLineWidth(1);
+        
+        ofSetColor(0, 0, 255, alphaGray);
+        grayImage03.draw(0, 0, wfull, hfull);
+        //        ofSetColor(0, 255, 0, 50);
+        //        contourFinder02.draw(0, 0, wfull, hfull);
+        // draw Centorid of contour02
+        int centroX03;
+        int centroY03;
+        ofSetColor(0, 255, 255, alphaSpring);
+        ofSetLineWidth(4);
+        for( int i = 0; i < 3; i++){
+            centroX03 = contourFinder03.blobs[i].centroid.x * wfull / WIDTH * 1.25;
+            centroY03 = contourFinder03.blobs[i].centroid.y * hfull / HEIGHT * 1.25;
+            if(centroX03 > 0 && centroX03 < wfull && centroY03 > 0 && centroY03 < hfull){
+                xCell = centroX03 * cols / wfull;
+                yCell = centroY03 * rows / hfull;
+                ofCircle(centroX03, centroY03, 30); // Centroid draw
+                if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
+                    //patterns::blinker01(grid, xCell, yCell);
+                    patterns::glider01(grid, xCell, yCell);
+                }
+            }
+        }
+        ofSetLineWidth(1);
+        
+        stringstream reportScreen;
+        reportScreen << "wfull=" << wfull << ",hfull=" << hfull << ", cols=" << cols << ",rows=" << rows << endl
+        << "centroX02=" << centroX02 << ",centroY02=" << centroY02 << endl
+        << "xCell=" << xCell << ",yCell=" << yCell << endl
+        << "depth_min=" << depth_min << ", frame number=" << ofGetFrameNum() << endl
+        << endl;
+        ofSetColor(255, 255, 255);
+        ofDrawBitmapString(reportScreen.str(), 20, 100);
+        
+    }
+}
+//--------------------------------------------------------------
+// kinect exit
 void gameOfLife::exit() {
 	kinect.setCameraTiltAngle(0); // zero the tilt on exit
 	kinect.close();
 }
+
 
 //--------------------------------------------------------------

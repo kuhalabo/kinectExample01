@@ -83,6 +83,11 @@ public:
 	ofxCvContourFinder contourFinder01;
 	ofxCvContourFinder contourFinder02;
 	ofxCvContourFinder contourFinder03;
+    
+    void kinectSetup();
+    void kinectUpdate();
+    void kinectDraw();
+//--------------------------
 	
 	bool bThreshWithOpenCV;
 	
