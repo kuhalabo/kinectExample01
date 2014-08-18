@@ -37,6 +37,7 @@ const int SCREENRATE = 1;
 // fullscreen width, height
 int wfull = 640;
 int hfull = 480;
+int depth_min = 220;
 /*//////////////////////////////////*/
 
 ofImage myImage;
@@ -91,22 +92,24 @@ void gameOfLife::setup() {
 	colorImg.allocate(kinect.width, kinect.height);
 	grayImage01.allocate(kinect.width, kinect.height);
 	grayImage02.allocate(kinect.width, kinect.height);
+	grayImage03.allocate(kinect.width, kinect.height);
 	grayThreshNear.allocate(kinect.width, kinect.height);
 	grayThreshFar.allocate(kinect.width, kinect.height);
 
-	//nearThreshold = 230;
-	//farThreshold = 70;
-
     /*
+     //nearThreshold = 230;
+     //farThreshold = 70;
 	nearThreshold01 = 250;
 	farThreshold01 = 240;
 	nearThreshold02 = 240;
 	farThreshold02 = 230;
      */
-	nearThreshold01 = 230;
-	farThreshold01 = 220;
-	nearThreshold02 = 220;
-	farThreshold02 = 210;
+	nearThreshold01 = depth_min + 30;
+	farThreshold01 = depth_min + 20;
+	nearThreshold02 = depth_min + 20;
+	farThreshold02 = depth_min + 10;
+	nearThreshold03 = depth_min + 10;
+	farThreshold03 = depth_min;
 	bThreshWithOpenCV = true;
 	
 	// zero the tilt on startup
@@ -155,6 +158,8 @@ void gameOfLife::update() {
 		
         //左右反転
         //colorImg.mirror(false, true);
+
+        // 01 layer
         // load grayscale depth image from the kinect source
 		grayImage01.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
 		
@@ -188,10 +193,8 @@ void gameOfLife::update() {
 		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
 		// also, find holes is set to true so we will get interior contours as well....
 		contourFinder01.findContours(grayImage01, 10, (kinect.width*kinect.height)/2, 20, false);
-//    }
-    
-//    if(kinect.isFrameNew()) {
         
+        // 02 layer
         // load grayscale depth image from the kinect source
         grayImage02.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
         
@@ -226,7 +229,44 @@ void gameOfLife::update() {
 		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
 		// also, find holes is set to true so we will get interior contours as well....
         contourFinder02.findContours(grayImage02, 10, (kinect.width*kinect.height)/2, 20, false);
-	}
+
+        // 03 layer
+        // load grayscale depth image from the kinect source
+        grayImage03.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
+        
+        // we do two thresholds - one for the far plane and one for the near plane
+        // we then do a cvAnd to get the pixels which are a union of the two thresholds
+        if(bThreshWithOpenCV) {
+            grayThreshNear = grayImage03;
+            grayThreshFar = grayImage03;
+            grayThreshNear.threshold(nearThreshold03, true);
+            grayThreshFar.threshold(farThreshold03);
+            cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage03.getCvImage(), NULL);
+        } else {
+            
+            // or we do it ourselves - show people how they can work with the pixels
+            unsigned char * pix = grayImage03.getPixels();
+            
+            int numPixels = grayImage03.getWidth() * grayImage03.getHeight();
+            for(int i = 0; i < numPixels; i++) {
+                if(pix[i] < nearThreshold03 && pix[i] > farThreshold03) {
+                    pix[i] = 255;
+                    //pix[i] = 25;
+                } else {
+                    pix[i] = 0;
+                    //pix[i] = 23;
+                }
+            }
+        }
+        
+		// update the cv images
+        grayImage03.flagImageChanged();
+		
+		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
+		// also, find holes is set to true so we will get interior contours as well....
+        contourFinder03.findContours(grayImage03, 10, (kinect.width*kinect.height)/2, 20, false);
+
+    }
     
 }
 
@@ -337,14 +377,19 @@ void gameOfLife::draw() {
 
         ofSetColor(255, 0, 0, 100);
         grayImage01.draw(10 + 256 * SCREENRATE, 320, 400, 300);
-        ofSetColor(255, 255, 0, 100);
+        //ofSetColor(255, 255, 0, 100);
         //contourFinder01.draw(10 + 256 * SCREENRATE, 320, 400, 300);
         
-        ofSetColor(0, 255, 0, 100);
+        ofSetColor(255, 255, 0, 100);
         grayImage02.draw(10 + 256 * SCREENRATE, 320, 400, 300);
-        ofSetColor(0, 255, 255, 100);
+        //ofSetColor(0, 255, 255, 100);
         //contourFinder02.draw(10 + 256 * SCREENRATE, 320, 400, 300);
 
+        ofSetColor(0, 255, 0, 100);
+        grayImage03.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+        //ofSetColor(0, 0, 255, 100);
+        //contourFinder03.draw(10 + 256 * SCREENRATE, 320, 400, 300);
+        
         // draw instructions
         ofSetColor(255, 255, 255);
         //ofSetColor(255, 255, 0);
@@ -375,7 +420,7 @@ void gameOfLife::draw() {
     }
     else{
         int xCell, yCell;
-        ofSetColor(255, 0, 0, 150);
+        ofSetColor(255, 0, 0, 80);
         grayImage01.draw(0, 0, wfull, hfull);
 //        ofSetColor(255, 0, 0, 100);
 //        contourFinder01.draw(0, 0, wfull, hfull);
@@ -406,7 +451,7 @@ void gameOfLife::draw() {
         // draw Centorid of contour02
         int centroX02;
         int centroY02;
-        ofSetColor(0, 255, 255, 255);
+        ofSetColor(0, 255, 0, 255);
         ofSetLineWidth(5);
         for( int i = 0; i < 3; i++){
             centroX02 = contourFinder02.blobs[i].centroid.x * wfull / WIDTH * 1.25;
@@ -423,10 +468,35 @@ void gameOfLife::draw() {
         }
         ofSetLineWidth(1);
 
+        ofSetColor(0, 0, 255, 120);
+        grayImage03.draw(0, 0, wfull, hfull);
+        //        ofSetColor(0, 255, 0, 50);
+        //        contourFinder02.draw(0, 0, wfull, hfull);
+        // draw Centorid of contour02
+        int centroX03;
+        int centroY03;
+        ofSetColor(0, 255, 255, 255);
+        ofSetLineWidth(5);
+        for( int i = 0; i < 3; i++){
+            centroX03 = contourFinder03.blobs[i].centroid.x * wfull / WIDTH * 1.25;
+            centroY03 = contourFinder03.blobs[i].centroid.y * hfull / HEIGHT * 1.25;
+            if(centroX03 > 0 && centroX03 < wfull && centroY03 > 0 && centroY03 < hfull){
+                xCell = centroX03 * cols / wfull;
+                yCell = centroY03 * rows / hfull;
+                ofCircle(centroX03, centroY03, 30); // Centroid draw
+                if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
+                    //patterns::blinker01(grid, xCell, yCell);
+                    patterns::glider01(grid, xCell, yCell);
+                }
+            }
+        }
+        ofSetLineWidth(1);
+        
         stringstream reportScreen;
         reportScreen << "wfull=" << wfull << ",hfull=" << hfull << ", cols=" << cols << ",rows=" << rows << endl
         << "centroX02=" << centroX02 << ",centroY02=" << centroY02 << endl
-        << "xCell=" << xCell << ",yCell=" << yCell << endl;
+        << "xCell=" << xCell << ",yCell=" << yCell << endl
+        << "depth_min=" << depth_min << endl;
         ofSetColor(255, 255, 255);
         ofDrawBitmapString(reportScreen.str(), 20, 100);
 
@@ -595,6 +665,20 @@ void gameOfLife::keyPressed(int key) {
         case 'b':
             patterns::blinker01(grid, 50, 20);
             break;
+        case 'D':
+            depth_min = min(depth_min + 1,255);
+            nearThreshold01 = depth_min + 20;
+            farThreshold01 = depth_min + 10;
+            nearThreshold02 = depth_min + 10;
+            farThreshold02 = depth_min;
+            break;
+        case 'd':
+            depth_min = max(depth_min - 1,0);
+            nearThreshold01 = depth_min + 20;
+            farThreshold01 = depth_min + 10;
+            nearThreshold02 = depth_min + 10;
+            farThreshold02 = depth_min;
+            break;
             
             //-------------------------
             // kinect
@@ -603,15 +687,11 @@ void gameOfLife::keyPressed(int key) {
             if(angle>30) angle=30;
             kinect.setCameraTiltAngle(angle);
             break;
-            
         case OF_KEY_DOWN:
             angle--;
             if(angle<-30) angle=-30;
             kinect.setCameraTiltAngle(angle);
             break;
-            
-            
-            
             
         default:
             break;

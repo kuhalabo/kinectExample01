@@ -75,16 +75,19 @@ public:
 	
 	ofxCvGrayscaleImage grayImage01; // grayscale depth image
 	ofxCvGrayscaleImage grayImage02; // grayscale depth image
+	ofxCvGrayscaleImage grayImage03; // grayscale depth image
     
 	ofxCvGrayscaleImage grayThreshNear; // the near thresholded image
 	ofxCvGrayscaleImage grayThreshFar; // the far thresholded image
 	
-	ofxCvContourFinder contourFinder01, contourFinder02;
+	ofxCvContourFinder contourFinder01;
+	ofxCvContourFinder contourFinder02;
+	ofxCvContourFinder contourFinder03;
 	
 	bool bThreshWithOpenCV;
 	
-	int nearThreshold01,nearThreshold02;
-	int farThreshold01,farThreshold02;
+	int nearThreshold01,nearThreshold02,nearThreshold03;
+	int farThreshold01,farThreshold02,farThreshold03;
 	int angle;
     
 //--------------------------
