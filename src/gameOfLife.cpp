@@ -198,17 +198,16 @@ void gameOfLife::draw() {
 			}
 		}
 	}
-    /*パターン検出インスタンスの実行メソッド*/
-    drawingResPatterns(datas, blink1->mPattern, ofColor::green);
-    drawingResPatterns(datas, blink2->mPattern, ofColor::blue);
-    //  drawingResPatterns(datas, glider1->mPattern, ofColor::red);
-    //  drawingResPatterns(datas, glider2->mPattern, ofColor::orange);
-    //  drawingResPatterns(datas, glider3->mPattern, ofColor::yellowGreen);
-    ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+
     
     if (ofGetFrameNum() % TICK_INTERVAL == 0 && active) {
-        /*レスデータはここでクリアする*/
-        datas.clear();
+      ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+      
+      /*パターン検出インスタンスの実行メソッド*/
+      drawingResPatterns(datas);
+      
+      /*レスデータはここでクリアする*/
+      datas.clear();
     }
 
     //------------------------------------
@@ -221,27 +220,29 @@ void gameOfLife::draw() {
 /*::::::::::::::::::::::::
  // パターン発見時の描画まわり
  ::::::::::::::::::::::::*/
-void gameOfLife::drawingResPatterns(vector<resPattern> &datas, matchPattern &mPattern, ofColor paramsColor) {
-    for(resData = datas.begin(); resData != datas.end(); ++resData) {
-        resData->x.size();
-        if (resData->x.size() != 0) {
-            for (int h=0; h < resData->x.size(); h++) {
-                for (int i=0; i< mPattern.patternGrid[0]; i++) {
-                    for (int j=0; j < mPattern.patternGrid[1]; j++) {
-                        
-                        
-                        if (mPattern.pattern[mPattern.patternGrid[0] * i + j ] == 1) {
-                            ofSetColor(paramsColor.r, paramsColor.g, paramsColor.b, 100);
-                            ofFill();
-                            myImage.ofImage_::draw((float)((i + resData->x.at(h)) * cellWidth), (float)((j + resData->y.at(h)) * cellHeight), cellWidth*3.0, cellHeight*3.0);
-                            ofRect( (i + resData->x.at(h)) * cellWidth, (j + resData->y.at(h)) * cellHeight, cellWidth, cellHeight);
-                            ofNoFill();
-                        }
-                    }
-                }
+void gameOfLife::drawingResPatterns(vector<resPattern> &datas) {
+  for(resData = datas.begin(); resData != datas.end(); ++resData) {
+    resData->x.size();
+    if (resData->x.size() != 0) {
+      for (int h=0; h < resData->x.size(); h++) {
+        for (int i=0; i< resData->mPattern.patternGrid[0]; i++) {
+          for (int j=0; j < resData->mPattern.patternGrid[1]; j++) {
+            if (resData->mPattern.pattern[resData->mPattern.patternGrid[0] * j + i ] == 1) {
+              
+              /*検出描画チェックログ よくつかう*/
+              //              cout << resData->mPattern.name << endl;
+              
+              ofSetColor(resData->mPattern.color.r, resData->mPattern.color.g, resData->mPattern.color.b, 200);
+              ofFill();
+              myImage.ofImage_::draw((float)((i + resData->x.at(h)) * cellWidth) - cellWidth / 2, (float)((j + resData->y.at(h)) * cellHeight) - cellHeight / 2, cellWidth*3.0, cellHeight*3.0);
+              //              ofRect( (i + resData->x.at(h)) * cellWidth, (j + resData->y.at(h)) * cellHeight, cellWidth, cellHeight);
+              //              ofNoFill();
             }
+          }
         }
+      }
     }
+  }
 }
 
 
