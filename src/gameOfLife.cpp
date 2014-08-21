@@ -28,6 +28,8 @@ patternDetect *blink2;
 patternDetect *glider1;
 patternDetect *glider2;
 patternDetect *glider3;
+patternDetect *glider4;
+patternDetect *line5;
 
 vector<resPattern> datas;
 vector<resPattern>::iterator resData;
@@ -50,21 +52,23 @@ int alphaSpring = 200;
 
 
 void gameOfLife::setup() {
-    fullScreen = false;
-    highlight = false;
-    active = false;
+  fullScreen = false;
+  highlight = false;
+  active = false;
     
-    ofSetFullscreen(false);
-    ofSetWindowShape(WIDTH, HEIGHT);
+  ofSetFullscreen(false);
+  ofSetWindowShape(WIDTH, HEIGHT);
     
-    init(WIDTH, HEIGHT, CELLSIZE);
+  init(WIDTH, HEIGHT, CELLSIZE);
     
 	ofBackground(ofColor::white);
 	ofSetBackgroundAuto(true);
 	ofSetWindowTitle("Conway's Game of Life");
 	ofSetFrameRate(FRAMERATE);
     
-    myImage.loadImage("circleAlpha.tif");
+  myImage.loadImage("circleAlpha.tif");
+  
+  audioSetup();
     
     //  sender.setup(HOST, PORT);
     
@@ -100,6 +104,10 @@ void gameOfLife::update() {
         datas.push_back(glider1->detection(grid, rows, cols));
         datas.push_back(glider2->detection(grid, rows, cols));
         datas.push_back(glider3->detection(grid, rows, cols));
+        datas.push_back(glider4->detection(grid, rows, cols));
+      
+        datas.push_back(line5->detection(grid, rows, cols));
+        audioTick = true;
         //        oscSending(datas);
     }
     //---------------------------
@@ -255,19 +263,26 @@ void gameOfLife::clear() {
  *****************************/
 void gameOfLife::patternMapping() {
     
-    int grid1[] = {1, 5};
-    int grid2[] = {3, 3};
-    int pat1[] = {0, 0, 0, 1, 1, 1, 0, 0, 0};
-    int pat2[] = {0, 1, 0, 0, 1, 0, 0, 1, 0};
-    
-    int patGlider1[] = {0, 1, 0, 0, 0, 1, 1, 1, 1};
-    int patGlider2[] = {0, 0, 1, 1, 0, 1, 0, 1, 1};
-    int patGlider3[] = {1, 0, 0, 0, 1, 1, 1, 1, 0};
-    blink1 = new patternDetect("blink1", grid2, pat1);
-    blink2 = new patternDetect("blink2", grid2, pat2);
-    glider1 = new patternDetect("glider1", grid2, patGlider1);
-    glider2 = new patternDetect("glider2", grid2, patGlider2);
-    glider3 = new patternDetect("glider3", grid2, patGlider3);
+  int grid1[] = {1, 7};
+  int grid2[] = {3, 3};
+  int pat1[] = {0, 0, 0, 1, 1, 1, 0, 0, 0};
+  int pat2[] = {0, 1, 0, 0, 1, 0, 0, 1, 0};
+  int pat3[] = {0, 1, 1, 1, 1, 1, 0};
+  
+  int patGlider1[] = {0, 1, 0, 0, 0, 1, 1, 1, 1};
+  int patGlider2[] = {0, 0, 1, 1, 0, 1, 0, 1, 1};
+  int patGlider3[] = {1, 0, 0, 0, 1, 1, 1, 1, 0};
+  int patGlider4[] = {0, 0, 1, 1, 1, 0, 0, 1, 1};
+  
+  blink1 = new patternDetect("blink1", grid2, pat1, ofColor::cyan);
+  blink2 = new patternDetect("blink2", grid2, pat2, ofColor::cyan);
+  
+  glider1 = new patternDetect("glider1", grid2, patGlider1, ofColor::cyan);
+  glider2 = new patternDetect("glider2", grid2, patGlider2, ofColor::cyan);
+  glider3 = new patternDetect("glider3", grid2, patGlider3, ofColor::cyan);
+  glider4 = new patternDetect("glider4", grid2, patGlider4, ofColor::cyan);
+  
+  line5 = new patternDetect("line5", grid2, pat3, ofColor::cyan);
 }
 
 
@@ -736,3 +751,119 @@ void gameOfLife::exit() {
 
 
 //--------------------------------------------------------------
+
+
+
+/*****************************
+ * オーディオ出力
+ *****************************/
+
+void gameOfLife::audioSetup() {
+  
+  sampleRate 			= 44100; /* Sampling Rate */
+	initialBufferSize	= 512;	/* Buffer Size. you have to fill this buffer with sound*/
+	
+	ofSoundStreamSetup(2,0,this, sampleRate, initialBufferSize, 4);
+  
+  lAudio.assign(initialBufferSize, 0.0);
+	rAudio.assign(initialBufferSize, 0.0);
+  
+  /*frequencyのマッピング*/
+  freqMap["blink1"] = 493.883301;
+  freqMap["blink2"] = 329.627563;
+  
+  freqMap["glider1"] = 277.182617;
+  freqMap["glider2"] = 369.994415;
+  freqMap["glider3"] = 415.304688;
+  freqMap["glider4"] = 440.0;
+  
+  freqMap["line5"] = 554.365234;
+  
+  mode = 0;
+  
+}
+
+void gameOfLife::audioOut(float *output, int bufferSize, int nChannels) {
+  float currentTone[polyNum];
+  float currentAdditiveTone[polyNum];
+  int currentX[polyNum]; // 発音数に応じて得れる要素数を制限する
+  int currentY[polyNum]; // 発音数に応じて得れる要素数を制限する
+  
+  for (int i = 0; i < bufferSize; i++) {
+    //    for(resData = datas.begin(); resData != datas.end(); ++resData) {
+    //      float career = patTofreq(resData->mPattern.name);
+    //      for(int i = 0; i < resData->x.size(); i++) {
+    //        wave = osc.sinewave(career) * resData->y[i] * 0.01;
+    //        float pan = 1 / resData->x[i];
+    //        mymix.stereo(wave, outputs, pan);
+    //      }
+    
+    //
+    //      lAudio[i] = output[i * nChannels] = outputs[0];
+    //      rAudio[i] = output[i * nChannels + 1] = outputs[1];
+    //    }
+    
+    if (audioTick == true) {
+      wave = 0;
+      
+      for(int j = 0; j < polyNum; j ++ ) {
+        ADSR[j].trigger(0, adsrEnv[0]);
+        currentTone[j] = 0;
+      }
+      
+      for (int k = 0; k < 7; k ++ ) {
+        for(int l = 0; l < datas[k].x.size(); l ++ ) {
+          float career = patTofreq(datas[k].mPattern.name);
+          
+          /*決めウチのオシレーター数を超えないようのif文*/
+          if ((k * l) + l < polyNum) {
+            
+            currentTone[(k * l) + l] = career;
+            // ちょっと後で原因究明したいが、いったん変な値を汚く間引く
+            currentX[(k * l) + l] = datas[k].x[l] > 0 && datas[k].x[l] < 2000 ? datas[k].x[l] : 0;
+            currentY[(k * l) + l] = datas[k].y[l] > 0 && datas[k].y[l] < 2000 ? datas[k].y[l] : 0;
+          }
+        }
+      }
+      
+      //    float career = patTofreq(resData->mPattern.name);
+      addOscCOunter ++;
+      audioTick = false;
+    }
+    
+    if (addOscCOunter % 43 == 42) {
+      for (int i = 0; i < polyNum; i ++ ) {
+        currentAdditiveTone[i] = currentTone[i] + (rand() % 10) ;
+      }
+      addOscCOunter = 0;
+    }
+    
+    for(int m = 0; m < polyNum; m ++ ) {
+      ADSRout = ADSR[m].line(6, adsrEnv);
+      if (currentTone[m] != 0) {
+        wave += oscbank[m].square(currentTone[m]);
+        mymix.stereo(wave * ADSRout, outputs, ( 1 / ((float)(currentX[m]) ) / (float)(ofGetWidth())) );
+      }
+      
+      if (currentAdditiveTone[m] != 0) {
+        wave2 += addOsc[m].sinewave(currentAdditiveTone[m]) * 0.001;
+      }
+    }
+    
+    //    mymix.stereo(wave2, outputs, 0.5);
+    lAudio[i] = output[i * nChannels] = outputs[0] + wave2;
+    rAudio[i] = output[i * nChannels + 1] = outputs[1] +wave2;
+  }
+}
+
+float gameOfLife::patTofreq(string patName) {
+  if (freqMap.find(patName) == freqMap.end()) {
+    // not found
+    
+    return 0.0;
+  } else {
+    // found
+    
+    return freqMap[patName];
+  }
+}

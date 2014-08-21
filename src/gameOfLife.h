@@ -28,15 +28,16 @@ struct cell {
 
 
 struct matchPattern {
-    string name;
-    int patternGrid[2]; // ポインタ指定するとこけなかった 謎
-    int *pattern;
+  string name;
+  ofColor color;
+  int patternGrid[2]; // ポインタ指定するとこけなかった 謎
+  int *pattern;
 };
 
 struct resPattern {
-    string patternName;
-	vector<int> x;
-    vector<int> y;
+  matchPattern mPattern;
+  vector<int> x;
+  vector<int> y;
 };
 
 class gameOfLife : public ofBaseApp {
@@ -97,6 +98,33 @@ public:
 	int angle;
     
 //--------------------------
+  
+  
+  /************************/
+  // ofxMaximまわり変数宣言 //
+  /***********************/
+  void audioOut(float * output, int bufferSize, int nChannels);
+  void audioSetup();
+  float patTofreq(string patName);
+  int initialBufferSize;
+  int sampleRate;
+  int mode;
+  double wave, wave2, sample, ADSRout, outputs[2];
+  ofxMaxiMix mymix;
+  ofxMaxiOsc osc;
+  double adsrEnv[6]={0, 10, 0.005, 10, 0, 20};
+  //  vector <ofxMaxiOsc> oscbank;
+  vector <float> lAudio;
+  vector <float> rAudio;
+  
+  std::map<std::string, float> freqMap;
+  bool audioTick = false;
+  int polyNum = 30;
+  ofxMaxiOsc oscbank[30];
+  ofxMaxiOsc addOsc[30];
+  ofxMaxiEnvelope ADSR[30];
+  ofxMaxiFilter vcFilter[30];
+  int addOscCOunter = 0;
 
 private:
     cell **grid;
