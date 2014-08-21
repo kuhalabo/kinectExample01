@@ -18,7 +18,7 @@ const int HEIGHT = 600;
 const int CELLSIZE = 6;
 const int FULLSCREEN_CELLSIZE = 8;
 const int TICK_INTERVAL = 6;
-const int FRAMERATE = 30;
+const int FRAMERATE = 60;
 
 ///////////////////////////////////
 // いくつかのグローバル変数//

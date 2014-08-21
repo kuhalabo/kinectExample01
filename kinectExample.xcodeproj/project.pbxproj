@@ -22,6 +22,13 @@
 		949EAE991998D22200E64A5C /* gameOfLife.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 949EAE971998D22200E64A5C /* gameOfLife.cpp */; };
 		ACE7DC9A3223ED5EE1B80074 /* cameras.c in Sources */ = {isa = PBXBuildFile; fileRef = 3DBD37876A11E46E4D7069B3 /* cameras.c */; };
 		BBAB23CB13894F3D00AA2426 /* GLUT.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = BBAB23BE13894E4700AA2426 /* GLUT.framework */; };
+		C530ADD619A639CF00F5A87E /* fft.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C530ADC719A639CF00F5A87E /* fft.cpp */; };
+		C530ADD719A639CF00F5A87E /* maxiAtoms.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C530ADC919A639CF00F5A87E /* maxiAtoms.cpp */; };
+		C530ADD819A639CF00F5A87E /* maxiFFT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C530ADCB19A639CF00F5A87E /* maxiFFT.cpp */; };
+		C530ADD919A639CF00F5A87E /* maxiGrains.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C530ADCD19A639CF00F5A87E /* maxiGrains.cpp */; };
+		C530ADDA19A639CF00F5A87E /* maxiMFCC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C530ADCF19A639CF00F5A87E /* maxiMFCC.cpp */; };
+		C530ADDB19A639CF00F5A87E /* maximilian.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C530ADD119A639CF00F5A87E /* maximilian.cpp */; };
+		C530ADDC19A639CF00F5A87E /* stb_vorbis.c in Sources */ = {isa = PBXBuildFile; fileRef = C530ADD419A639CF00F5A87E /* stb_vorbis.c */; };
 		D31F5C1B140C59B2AF1533A8 /* registration.c in Sources */ = {isa = PBXBuildFile; fileRef = 71958293AC5292DE4B7C619D /* registration.c */; };
 		D3301F6A0B43BB293ED97C1D /* ofxCvShortImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A4DD23693DFAB8EC05FAA5D /* ofxCvShortImage.cpp */; };
 		E212C821D1064B92DD953A42 /* ofxCvHaarFinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A16CBF2E8CFE43AF54FE6F5 /* ofxCvHaarFinder.cpp */; };
@@ -174,6 +181,22 @@
 		BF2F2AA872288D30F53983EF /* tilt.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.c; fileEncoding = 30; name = tilt.c; path = ../../../addons/ofxKinect/libs/libfreenect/src/tilt.c; sourceTree = SOURCE_ROOT; };
 		C1C56D20A1A57DC44096BFE7 /* ofxCvContourFinder.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxCvContourFinder.h; path = ../../../addons/ofxOpenCv/src/ofxCvContourFinder.h; sourceTree = SOURCE_ROOT; };
 		C4FB85020773DA0F09B8B6CE /* ts_gtest.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ts_gtest.h; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/ts/ts_gtest.h; sourceTree = SOURCE_ROOT; };
+		C530ADC519A639CF00F5A87E /* ofxMaxim.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ofxMaxim.h; sourceTree = "<group>"; };
+		C530ADC719A639CF00F5A87E /* fft.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = fft.cpp; sourceTree = "<group>"; };
+		C530ADC819A639CF00F5A87E /* fft.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fft.h; sourceTree = "<group>"; };
+		C530ADC919A639CF00F5A87E /* maxiAtoms.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = maxiAtoms.cpp; sourceTree = "<group>"; };
+		C530ADCA19A639CF00F5A87E /* maxiAtoms.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = maxiAtoms.h; sourceTree = "<group>"; };
+		C530ADCB19A639CF00F5A87E /* maxiFFT.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = maxiFFT.cpp; sourceTree = "<group>"; };
+		C530ADCC19A639CF00F5A87E /* maxiFFT.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = maxiFFT.h; sourceTree = "<group>"; };
+		C530ADCD19A639CF00F5A87E /* maxiGrains.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = maxiGrains.cpp; sourceTree = "<group>"; };
+		C530ADCE19A639CF00F5A87E /* maxiGrains.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = maxiGrains.h; sourceTree = "<group>"; };
+		C530ADCF19A639CF00F5A87E /* maxiMFCC.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = maxiMFCC.cpp; sourceTree = "<group>"; };
+		C530ADD019A639CF00F5A87E /* maxiMFCC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = maxiMFCC.h; sourceTree = "<group>"; };
+		C530ADD119A639CF00F5A87E /* maximilian.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = maximilian.cpp; sourceTree = "<group>"; };
+		C530ADD219A639CF00F5A87E /* maximilian.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = maximilian.h; sourceTree = "<group>"; };
+		C530ADD319A639CF00F5A87E /* sineTable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sineTable.h; sourceTree = "<group>"; };
+		C530ADD419A639CF00F5A87E /* stb_vorbis.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = stb_vorbis.c; sourceTree = "<group>"; };
+		C530ADD519A639CF00F5A87E /* stb_vorbis.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stb_vorbis.h; sourceTree = "<group>"; };
 		C6151136D101F857DAE12722 /* ofxCvImage.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxCvImage.cpp; path = ../../../addons/ofxOpenCv/src/ofxCvImage.cpp; sourceTree = SOURCE_ROOT; };
 		C61D3DACE506E4A1C3A6D782 /* highgui.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = highgui.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/highgui/highgui.hpp; sourceTree = SOURCE_ROOT; };
 		C66C6414C8B86FDB99ED3B70 /* core.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = core.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/core.hpp; sourceTree = SOURCE_ROOT; };
@@ -533,6 +556,7 @@
 		BB4B014C10F69532006C3DED /* addons */ = {
 			isa = PBXGroup;
 			children = (
+				C530ADC319A639CF00F5A87E /* ofxMaxim */,
 				9683228C705CA3FF4F2EA945 /* ofxKinect */,
 				A0B90D3B0ADB9C1716816714 /* ofxOpenCv */,
 				94D15B371991A30200B8D0B2 /* File */,
@@ -567,6 +591,47 @@
 				BBAB23BE13894E4700AA2426 /* GLUT.framework */,
 			);
 			name = "3rd party frameworks";
+			sourceTree = "<group>";
+		};
+		C530ADC319A639CF00F5A87E /* ofxMaxim */ = {
+			isa = PBXGroup;
+			children = (
+				C530ADC419A639CF00F5A87E /* src */,
+				C530ADC619A639CF00F5A87E /* libs */,
+			);
+			name = ofxMaxim;
+			sourceTree = "<group>";
+		};
+		C530ADC419A639CF00F5A87E /* src */ = {
+			isa = PBXGroup;
+			children = (
+				C530ADC519A639CF00F5A87E /* ofxMaxim.h */,
+			);
+			name = src;
+			path = ../../../addons/ofxMaxim/src;
+			sourceTree = "<group>";
+		};
+		C530ADC619A639CF00F5A87E /* libs */ = {
+			isa = PBXGroup;
+			children = (
+				C530ADC719A639CF00F5A87E /* fft.cpp */,
+				C530ADC819A639CF00F5A87E /* fft.h */,
+				C530ADC919A639CF00F5A87E /* maxiAtoms.cpp */,
+				C530ADCA19A639CF00F5A87E /* maxiAtoms.h */,
+				C530ADCB19A639CF00F5A87E /* maxiFFT.cpp */,
+				C530ADCC19A639CF00F5A87E /* maxiFFT.h */,
+				C530ADCD19A639CF00F5A87E /* maxiGrains.cpp */,
+				C530ADCE19A639CF00F5A87E /* maxiGrains.h */,
+				C530ADCF19A639CF00F5A87E /* maxiMFCC.cpp */,
+				C530ADD019A639CF00F5A87E /* maxiMFCC.h */,
+				C530ADD119A639CF00F5A87E /* maximilian.cpp */,
+				C530ADD219A639CF00F5A87E /* maximilian.h */,
+				C530ADD319A639CF00F5A87E /* sineTable.h */,
+				C530ADD419A639CF00F5A87E /* stb_vorbis.c */,
+				C530ADD519A639CF00F5A87E /* stb_vorbis.h */,
+			);
+			name = libs;
+			path = ../../../addons/ofxMaxim/libs;
 			sourceTree = "<group>";
 		};
 		C58CC92A5283B95AA31D50FB /* video */ = {
@@ -814,6 +879,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C530ADDC19A639CF00F5A87E /* stb_vorbis.c in Sources */,
+				C530ADD619A639CF00F5A87E /* fft.cpp in Sources */,
+				C530ADD819A639CF00F5A87E /* maxiFFT.cpp in Sources */,
 				949EAE951998D10700E64A5C /* patterns.cpp in Sources */,
 				E4B69E200A3A1BDC003C02F2 /* main.cpp in Sources */,
 				E4B69E210A3A1BDC003C02F2 /* ofApp.cpp in Sources */,
@@ -822,16 +890,20 @@
 				D31F5C1B140C59B2AF1533A8 /* registration.c in Sources */,
 				E55DEEF784A10419E444669E /* flags.c in Sources */,
 				FCC16AB16073FF0581F50ED7 /* loader.c in Sources */,
+				C530ADD919A639CF00F5A87E /* maxiGrains.cpp in Sources */,
 				21A059755481CC0BF969FD2D /* keep_alive.c in Sources */,
 				F4135EEFC911E9ED211FB6F9 /* core.c in Sources */,
 				255A7B680DC81E543C875794 /* usb_libusb10.c in Sources */,
+				C530ADD719A639CF00F5A87E /* maxiAtoms.cpp in Sources */,
 				ACE7DC9A3223ED5EE1B80074 /* cameras.c in Sources */,
 				49BEEB2DFA5319D55AA6899F /* tilt.c in Sources */,
 				0F8F016776681D468C0D0949 /* audio.c in Sources */,
 				63020F16C7E8DED980111241 /* ofxCvImage.cpp in Sources */,
 				169D3C72FDE6C5590A1616F5 /* ofxCvFloatImage.cpp in Sources */,
 				250A95BA26587BE85DB0A353 /* ofxCvColorImage.cpp in Sources */,
+				C530ADDA19A639CF00F5A87E /* maxiMFCC.cpp in Sources */,
 				FB09C6B2A1DA0EA217240CB8 /* ofxCvGrayscaleImage.cpp in Sources */,
+				C530ADDB19A639CF00F5A87E /* maximilian.cpp in Sources */,
 				1D5F3298C2FA073628012944 /* ofxCvContourFinder.cpp in Sources */,
 				949EAE991998D22200E64A5C /* gameOfLife.cpp in Sources */,
 				D3301F6A0B43BB293ED97C1D /* ofxCvShortImage.cpp in Sources */,
@@ -1084,6 +1156,7 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_52)",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)Debug";
+				USER_HEADER_SEARCH_PATHS = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -1169,6 +1242,7 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_51)",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

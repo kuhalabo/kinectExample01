@@ -14,6 +14,7 @@
 // kinect setting
 #include "ofxOpenCv.h"
 #include "ofxKinect.h"
+#include "ofxMaxim.h"
 
 #define HOST "localhost" //送信先ホストのIPを設定
 #define PORT 8000 //送信先のポート番号を設定
