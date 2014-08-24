@@ -49,6 +49,8 @@ float fullScreenRatio = 1.25;
 int depth_min = 220;
 int alphaGray = 30;
 int alphaSpring = 200;
+int getInfo = 1;
+int cellDirection = 1;
 //------------------------
 
 
@@ -351,7 +353,26 @@ void gameOfLife::pause() {
 void gameOfLife::mousePressed(int x, int y, int button) {
     int xcell = x/cellWidth;
 	int ycell = y/cellHeight;
-	grid[xcell][ycell].currState = !grid[xcell][ycell].currState;
+//	grid[xcell][ycell].currState = !grid[xcell][ycell].currState;
+//    patterns::glider01(grid, xcell, ycell);
+    switch (cellDirection) {
+        case 0:
+            patterns::glider02(grid, xcell, ycell);
+            break;
+        case 1:
+            patterns::glider04(grid, xcell, ycell);
+            break;
+        case 2:
+            patterns::glider01(grid, xcell, ycell);
+            break;
+        case 3:
+            patterns::glider03(grid, xcell, ycell);
+            break;
+        default:
+            break;
+    }
+    if(cellDirection < 4) cellDirection++; else cellDirection = 0;
+
 }
 
 void gameOfLife::keyPressed(int key) {
@@ -381,9 +402,11 @@ void gameOfLife::keyPressed(int key) {
             // for kinect by kuha
         case '1':
             patterns::glider01(grid, 100, 20);
+            patterns::glider03(grid, 100, 40);
             break;
         case '2':
             patterns::glider02(grid, 100, 10);
+            patterns::glider04(grid, 100, 100);
             break;
         case 'b':
             patterns::blinker01(grid, 50, 20);
@@ -407,6 +430,9 @@ void gameOfLife::keyPressed(int key) {
             break;
         case 'w':
             fullScreenRatio = max(fullScreenRatio - 0.01, 1.0);
+            break;
+        case 'I':
+            getInfo = getInfo * (-1);
             break;
         case OF_KEY_UP:
             angle++;
@@ -708,13 +734,26 @@ void gameOfLife::kinectDraw() {
                 yCell = centroY02 * rows / hfull;
                 ofCircle(centroX02, centroY02, 30); // Centroid draw
                 if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
-                    //patterns::blinker01(grid, xCell, yCell);
-                    patterns::glider01(grid, xCell, yCell);
+                    switch (cellDirection) {
+                        case 0:
+                            patterns::glider01(grid, xCell, yCell);
+                            break;
+                        case 1:
+                            patterns::glider03(grid, xCell, yCell);
+                            break;
+                        case 2:
+                            patterns::glider02(grid, xCell, yCell);
+                            break;
+                        case 3:
+                            patterns::glider04(grid, xCell, yCell);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }
         ofSetLineWidth(1);
-        
         ofSetColor(0, 0, 255, alphaGray);
         grayImage03.draw(0, 0, wfull, hfull);
         //        ofSetColor(0, 255, 0, 50);
@@ -732,22 +771,38 @@ void gameOfLife::kinectDraw() {
                 yCell = centroY03 * rows / hfull;
                 ofCircle(centroX03, centroY03, 30); // Centroid draw
                 if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
-                    //patterns::blinker01(grid, xCell, yCell);
-                    patterns::glider02(grid, xCell, yCell);
+                    switch (cellDirection) {
+                        case 0:
+                            patterns::glider02(grid, xCell, yCell);
+                            break;
+                        case 1:
+                            patterns::glider04(grid, xCell, yCell);
+                            break;
+                        case 2:
+                            patterns::glider01(grid, xCell, yCell);
+                            break;
+                        case 3:
+                            patterns::glider03(grid, xCell, yCell);
+                            break;
+                        default:
+                            break;
+                    }
+                    if(cellDirection < 4) cellDirection++; else cellDirection = 0;
                 }
             }
         }
         ofSetLineWidth(1);
         
-        stringstream reportScreen;
-        reportScreen << "wfull=" << wfull << ",hfull=" << hfull << ", cols=" << cols << ",rows=" << rows << endl
-        << "fullScreenRatio=" << fullScreenRatio << "centroX02=" << centroX02 << ",centroY02=" << centroY02 << endl
-        << "xCell=" << xCell << ",yCell=" << yCell << endl
-        << "depth_min=" << depth_min << ", frame number=" << ofGetFrameNum() << endl
-        << endl;
-        ofSetColor(255, 255, 255);
-        ofDrawBitmapString(reportScreen.str(), 20, 100);
-        
+        if( getInfo > 0 ){
+            stringstream reportScreen;
+            reportScreen << "wfull=" << wfull << ",hfull=" << hfull << ", cols=" << cols << ",rows=" << rows << endl
+            << "fullScreenRatio=" << fullScreenRatio << ", centroX02=" << centroX02 << ",centroY02=" << centroY02 << endl
+            << "xCell=" << xCell << ",yCell=" << yCell << endl
+            << "depth_min=" << depth_min << ", frame number=" << ofGetFrameNum() << endl
+            << endl;
+            ofSetColor(255, 255, 255);
+            ofDrawBitmapString(reportScreen.str(), 20, 100);
+        }
     }
 }
 //--------------------------------------------------------------
