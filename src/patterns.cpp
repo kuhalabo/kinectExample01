@@ -84,7 +84,7 @@ void patterns::pufferTrain(cell **grid, int startPosX, int startPosY) {
 
 // add by kuha
 void patterns::glider01(cell **grid, int startPosX, int startPosY) {
-    // left box
+    // go south east
     grid[startPosX+1][startPosY+3].currState = true;
     grid[startPosX+2][startPosY+1].currState = true;
     grid[startPosX+2][startPosY+3].currState = true;
@@ -92,12 +92,28 @@ void patterns::glider01(cell **grid, int startPosX, int startPosY) {
     grid[startPosX+3][startPosY+3].currState = true;
 }
 void patterns::glider02(cell **grid, int startPosX, int startPosY) {
-    // left box
+    // go north east
     grid[startPosX+1][startPosY+1].currState = true;
     grid[startPosX+2][startPosY+1].currState = true;
     grid[startPosX+2][startPosY+3].currState = true;
     grid[startPosX+3][startPosY+1].currState = true;
     grid[startPosX+3][startPosY+2].currState = true;
+}
+void patterns::glider03(cell **grid, int startPosX, int startPosY) {
+    // go north west
+    grid[startPosX+1][startPosY+1].currState = true;
+    grid[startPosX+1][startPosY+2].currState = true;
+    grid[startPosX+2][startPosY+1].currState = true;
+    grid[startPosX+2][startPosY+3].currState = true;
+    grid[startPosX+3][startPosY+1].currState = true;
+}
+void patterns::glider04(cell **grid, int startPosX, int startPosY) {
+    // go north west
+    grid[startPosX+1][startPosY+2].currState = true;
+    grid[startPosX+1][startPosY+3].currState = true;
+    grid[startPosX+2][startPosY+1].currState = true;
+    grid[startPosX+2][startPosY+3].currState = true;
+    grid[startPosX+3][startPosY+3].currState = true;
 }
 // add by kuha
 void patterns::blinker01(cell **grid, int startPosX, int startPosY) {

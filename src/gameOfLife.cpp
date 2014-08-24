@@ -43,6 +43,7 @@ const int SCREENRATE = 1;
 // fullscreen width, height
 int wfull = 640;
 int hfull = 480;
+float fullScreenRatio = 1.25;
 //int wfull = 800;
 //int hfull = 600;
 int depth_min = 220;
@@ -401,6 +402,12 @@ void gameOfLife::keyPressed(int key) {
             nearThreshold02 = depth_min + 10;
             farThreshold02 = depth_min;
             break;
+        case 'W':
+            fullScreenRatio = min(fullScreenRatio + 0.01, 2.5);
+            break;
+        case 'w':
+            fullScreenRatio = max(fullScreenRatio - 0.01, 1.0);
+            break;
         case OF_KEY_UP:
             angle++;
             if(angle>30) angle=30;
@@ -670,8 +677,8 @@ void gameOfLife::kinectDraw() {
         ofSetColor(255, 0, 255, alphaSpring);
         ofSetLineWidth(4);
         for( int i = 0; i < 3; i++){
-            centroX01 = contourFinder01.blobs[i].centroid.x * wfull / WIDTH * 1.25;
-            centroY01 = contourFinder01.blobs[i].centroid.y * hfull / HEIGHT * 1.25;
+            centroX01 = contourFinder01.blobs[i].centroid.x * wfull / WIDTH * fullScreenRatio;
+            centroY01 = contourFinder01.blobs[i].centroid.y * hfull / HEIGHT * fullScreenRatio;
             if(centroX01 > 0 && centroX01 < wfull && centroY01 > 0 && centroY01 < hfull){
                 xCell = centroX01 * cols / wfull;
                 yCell = centroY01 * rows / hfull;
@@ -694,8 +701,8 @@ void gameOfLife::kinectDraw() {
         ofSetColor(255, 255, 0, alphaSpring);
         ofSetLineWidth(4);
         for( int i = 0; i < 3; i++){
-            centroX02 = contourFinder02.blobs[i].centroid.x * wfull / WIDTH * 1.25;
-            centroY02 = contourFinder02.blobs[i].centroid.y * hfull / HEIGHT * 1.25;
+            centroX02 = contourFinder02.blobs[i].centroid.x * wfull / WIDTH * fullScreenRatio;
+            centroY02 = contourFinder02.blobs[i].centroid.y * hfull / HEIGHT * fullScreenRatio;
             if(centroX02 > 0 && centroX02 < wfull && centroY02 > 0 && centroY02 < hfull){
                 xCell = centroX02 * cols / wfull;
                 yCell = centroY02 * rows / hfull;
@@ -718,15 +725,15 @@ void gameOfLife::kinectDraw() {
         ofSetColor(0, 255, 255, alphaSpring);
         ofSetLineWidth(4);
         for( int i = 0; i < 3; i++){
-            centroX03 = contourFinder03.blobs[i].centroid.x * wfull / WIDTH * 1.25;
-            centroY03 = contourFinder03.blobs[i].centroid.y * hfull / HEIGHT * 1.25;
+            centroX03 = contourFinder03.blobs[i].centroid.x * wfull / WIDTH * fullScreenRatio;
+            centroY03 = contourFinder03.blobs[i].centroid.y * hfull / HEIGHT * fullScreenRatio;
             if(centroX03 > 0 && centroX03 < wfull && centroY03 > 0 && centroY03 < hfull){
                 xCell = centroX03 * cols / wfull;
                 yCell = centroY03 * rows / hfull;
                 ofCircle(centroX03, centroY03, 30); // Centroid draw
                 if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
                     //patterns::blinker01(grid, xCell, yCell);
-                    patterns::glider01(grid, xCell, yCell);
+                    patterns::glider02(grid, xCell, yCell);
                 }
             }
         }
@@ -734,7 +741,7 @@ void gameOfLife::kinectDraw() {
         
         stringstream reportScreen;
         reportScreen << "wfull=" << wfull << ",hfull=" << hfull << ", cols=" << cols << ",rows=" << rows << endl
-        << "centroX02=" << centroX02 << ",centroY02=" << centroY02 << endl
+        << "fullScreenRatio=" << fullScreenRatio << "centroX02=" << centroX02 << ",centroY02=" << centroY02 << endl
         << "xCell=" << xCell << ",yCell=" << yCell << endl
         << "depth_min=" << depth_min << ", frame number=" << ofGetFrameNum() << endl
         << endl;

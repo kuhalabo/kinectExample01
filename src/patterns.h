@@ -12,13 +12,16 @@
 
 class patterns {
 public:
-  static void gliderGun(cell **grid, int startPosX, int startPosY);
-  static void pufferTrain(cell **grid, int startPosX, int startPosY);
-
+    static void gliderGun(cell **grid, int startPosX, int startPosY);
+    static void pufferTrain(cell **grid, int startPosX, int startPosY);
     
-    // add by kua
+    
+    // add by kuha  --------------
     static void glider01(cell **grid, int startPosX, int startPosY);
     static void glider02(cell **grid, int startPosX, int startPosY);
+    static void glider03(cell **grid, int startPosX, int startPosY);
+    static void glider04(cell **grid, int startPosX, int startPosY);
     static void blinker01(cell **grid, int startPosX, int startPosY);
-
+    //-----------------
+    
 };
