@@ -47,10 +47,11 @@ float fullScreenRatio = 1.25;
 int wfull = 800;
 int hfull = 600;
 int depth_min = 220;
-int alphaGray = 50;
-int alphaSpring = 100;
+int alphaGray = 20;
+int alphaSpring = 50;
 int getInfo = -1;
 int cellDirection = 1;
+int nCentroid = 4;
 //------------------------
 
 
@@ -69,7 +70,8 @@ void gameOfLife::setup() {
     
 	//ofBackground(ofColor::white);
     ofBackground(0, 0, 0);
-	ofSetBackgroundAuto(true);
+	//ofSetBackgroundAuto(true);
+	ofSetBackgroundAuto(false);
 	ofSetWindowTitle("Conway's Game of Life");
 	ofSetFrameRate(FRAMERATE);
     
@@ -642,7 +644,8 @@ void gameOfLife::kinectUpdate() {
 //---------------------
 // kinect draw
 void gameOfLife::kinectDraw() {
-	ofSetColor(255, 255, 255);
+	//ofSetColor(0, 0, 0, 23);
+    //ofRect(0, 0, ofGetWidth(), ofGetHeight());
     //    ofBackground(0, 0, 0, 0);
 	
     //kinect.draw(0, 0, kinect.width, kinect.height);
@@ -708,16 +711,32 @@ void gameOfLife::kinectDraw() {
         int centroY01;
         ofSetColor(255, 0, 255, alphaSpring);
         ofSetLineWidth(4);
-        for( int i = 0; i < 3; i++){
+        for( int i = 0; i < nCentroid; i++){
             centroX01 = contourFinder01.blobs[i].centroid.x * wfull / WIDTH * fullScreenRatio;
             centroY01 = contourFinder01.blobs[i].centroid.y * hfull / HEIGHT * fullScreenRatio;
             if(centroX01 > 0 && centroX01 < wfull && centroY01 > 0 && centroY01 < hfull){
                 xCell = centroX01 * cols / wfull;
                 yCell = centroY01 * rows / hfull;
-                ofCircle(centroX01, centroY01, 30); // Centroid draw
+//                ofCircle(centroX01, centroY01, 30); // Centroid draw
                 if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
                     //patterns::blinker01(grid, xCell, yCell);
-                    patterns::blinker01(grid, xCell, yCell);
+                    switch (cellDirection) {
+                        case 0:
+                            patterns::glider01(grid, xCell, yCell);
+                            break;
+                        case 1:
+                            patterns::glider03(grid, xCell, yCell);
+                            break;
+                        case 2:
+                            patterns::glider02(grid, xCell, yCell);
+                            break;
+                        case 3:
+                            patterns::glider04(grid, xCell, yCell);
+                            break;
+                        default:
+                            break;
+                    }
+                    //patterns::blinker01(grid, xCell, yCell);
                 }
             }
         }
@@ -732,13 +751,13 @@ void gameOfLife::kinectDraw() {
         int centroY02;
         ofSetColor(255, 255, 0, alphaSpring);
         ofSetLineWidth(4);
-        for( int i = 0; i < 3; i++){
+        for( int i = 0; i < nCentroid; i++){
             centroX02 = contourFinder02.blobs[i].centroid.x * wfull / WIDTH * fullScreenRatio;
             centroY02 = contourFinder02.blobs[i].centroid.y * hfull / HEIGHT * fullScreenRatio;
             if(centroX02 > 0 && centroX02 < wfull && centroY02 > 0 && centroY02 < hfull){
                 xCell = centroX02 * cols / wfull;
                 yCell = centroY02 * rows / hfull;
-                ofCircle(centroX02, centroY02, 30); // Centroid draw
+//                ofCircle(centroX02, centroY02, 30); // Centroid draw
                 if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
                     switch (cellDirection) {
                         case 0:
@@ -769,13 +788,13 @@ void gameOfLife::kinectDraw() {
         int centroY03;
         ofSetColor(0, 255, 255, alphaSpring);
         ofSetLineWidth(4);
-        for( int i = 0; i < 3; i++){
+        for( int i = 0; i < nCentroid; i++){
             centroX03 = contourFinder03.blobs[i].centroid.x * wfull / WIDTH * fullScreenRatio;
             centroY03 = contourFinder03.blobs[i].centroid.y * hfull / HEIGHT * fullScreenRatio;
             if(centroX03 > 0 && centroX03 < wfull && centroY03 > 0 && centroY03 < hfull){
                 xCell = centroX03 * cols / wfull;
                 yCell = centroY03 * rows / hfull;
-                ofCircle(centroX03, centroY03, 30); // Centroid draw
+//                ofCircle(centroX03, centroY03, 30); // Centroid draw
                 if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
                     switch (cellDirection) {
                         case 0:
