@@ -47,12 +47,12 @@ float fullScreenRatio = 1.25;
 int wfull = 800;
 int hfull = 600;
 //int depth_min = 220;
-int depth_min = 100;
+int depth_min = 150;
 int alphaGray = 20;
 int alphaSpring = 50;
 int getInfo = -1;
 int cellDirection = 1;
-int nCentroid = 4;
+int nCentroid = 3;
 //------------------------
 
 
@@ -740,7 +740,8 @@ void gameOfLife::kinectDraw() {
                             patterns::glider02(grid, xCell, yCell);
                             break;
                         case 3:
-                            patterns::glider04(grid, xCell, yCell);
+                            patterns::blinker01(grid, xCell, yCell);
+                            //patterns::glider04(grid, xCell, yCell);
                             break;
                         default:
                             break;
@@ -777,6 +778,7 @@ void gameOfLife::kinectDraw() {
                             break;
                         case 2:
                             patterns::glider02(grid, xCell, yCell);
+                            //patterns::blinker01(grid, xCell, yCell);
                             break;
                         case 3:
                             patterns::glider04(grid, xCell, yCell);
@@ -811,6 +813,7 @@ void gameOfLife::kinectDraw() {
                             break;
                         case 1:
                             patterns::glider04(grid, xCell, yCell);
+                            //patterns::blinker01(grid, xCell, yCell);
                             break;
                         case 2:
                             patterns::glider01(grid, xCell, yCell);
