@@ -18,7 +18,7 @@ const int HEIGHT = 600;
 const int CELLSIZE = 6;
 const int FULLSCREEN_CELLSIZE = 8;
 const int TICK_INTERVAL = 6;
-const int FRAMERATE = 60;
+const int FRAMERATE = 30;
 
 ///////////////////////////////////
 // いくつかのグローバル変数//
@@ -41,44 +41,57 @@ ofImage myImage;
 // kinect
 const int SCREENRATE = 1;
 // fullscreen width, height
-int wfull = 640;
-int hfull = 480;
+//int wfull = 640;
+//int hfull = 480;
 float fullScreenRatio = 1.25;
-//int wfull = 800;
-//int hfull = 600;
+int wfull = 800;
+int hfull = 600;
 int depth_min = 220;
-int alphaGray = 30;
-int alphaSpring = 200;
-int getInfo = 1;
+int alphaGray = 50;
+int alphaSpring = 100;
+int getInfo = -1;
 int cellDirection = 1;
 //------------------------
 
 
 void gameOfLife::setup() {
-  fullScreen = false;
-  highlight = false;
-  active = false;
+    fullScreen = false;
+    //fullScreen = true;
+    highlight = true;
+    //highlight = false;
+    //active = false;
+    active = true;
     
-  ofSetFullscreen(false);
-  ofSetWindowShape(WIDTH, HEIGHT);
+    ofSetFullscreen(false);
+    ofSetWindowShape(WIDTH, HEIGHT);
     
-  init(WIDTH, HEIGHT, CELLSIZE);
+    init(WIDTH, HEIGHT, CELLSIZE);
     
-	ofBackground(ofColor::white);
+	//ofBackground(ofColor::white);
+    ofBackground(0, 0, 0);
 	ofSetBackgroundAuto(true);
 	ofSetWindowTitle("Conway's Game of Life");
 	ofSetFrameRate(FRAMERATE);
     
-  myImage.loadImage("circleAlpha.tif");
-  
-  audioSetup();
+    myImage.loadImage("circleAlpha.tif");
+    
+    audioSetup();
     
     //  sender.setup(HOST, PORT);
     
     //-----------------------------------
     // kinect
+    // Mix color setting
+    ofEnableSmoothing();
+    //    glEnable(GL_BLEND);
+    ofEnableAlphaBlending();
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
+    //ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+
     kinectSetup();
+    //goFullScreen();
     //------------------------------------
+    
 }
 
 void gameOfLife::init(int width, int height, int cellSize) {
@@ -116,6 +129,7 @@ void gameOfLife::update() {
     //---------------------------
     // kinect
     kinectUpdate();
+    if(ofGetFrameNum() == 30) goFullScreen();
     //---------------------------
     
 }
@@ -182,8 +196,7 @@ void gameOfLife::makeNextStateCurrent() {
 
 void gameOfLife::draw() {
 
-    ofBackground(0, 0, 0, 0);
-    //  ofEnableBlendMode(OF_BLENDMODE_ADD);
+//    ofBackground(0, 0, 0);
 	for (int i=0; i<cols; i++) {
 		for (int j=0; j<rows; j++) {
             cell thisCell = grid[i][j];
@@ -333,7 +346,7 @@ int gameOfLife::getNumActiveNeighbors(int colIndex, int rowIndex) {
 
 
 void gameOfLife::goFullScreen() {
-    active = false;
+//    active = false;
     ofToggleFullscreen();
     fullScreen = !fullScreen;
     if (fullScreen) {
@@ -401,15 +414,15 @@ void gameOfLife::keyPressed(int key) {
             //-------------------------
             // for kinect by kuha
         case '1':
-            patterns::glider01(grid, 100, 20);
-            patterns::glider03(grid, 100, 40);
+            //patterns::glider01(grid, 100, 20);
+            //patterns::glider03(grid, 100, 40);
             break;
         case '2':
-            patterns::glider02(grid, 100, 10);
-            patterns::glider04(grid, 100, 100);
+            //patterns::glider02(grid, 100, 10);
+            //patterns::glider04(grid, 100, 100);
             break;
         case 'b':
-            patterns::blinker01(grid, 50, 20);
+            //patterns::blinker01(grid, 50, 20);
             break;
         case 'D': // 0:far -> 255:near
             depth_min = min(depth_min + 1, 255);
@@ -456,13 +469,6 @@ void gameOfLife::keyPressed(int key) {
 //------------------------------------
 // kinect setup
 void gameOfLife::kinectSetup() {
-    // Mix color setting
-    ofEnableSmoothing();
-    //    glEnable(GL_BLEND);
-    ofEnableAlphaBlending();
-    ofEnableBlendMode(OF_BLENDMODE_ADD);
-    //ofEnableBlendMode(OF_BLENDMODE_ALPHA);
-    
     // enable depth->video image calibration
 	kinect.setRegistration(true);
     

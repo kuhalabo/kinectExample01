@@ -193,7 +193,7 @@ void ofApp::exit() {
 void ofApp::keyPressed (int key) {
 	switch (key) {
 		case ' ':
-			bThreshWithOpenCV = !bThreshWithOpenCV;
+			//bThreshWithOpenCV = !bThreshWithOpenCV;
 			break;
 			
 		case '>':
@@ -220,7 +220,7 @@ void ofApp::keyPressed (int key) {
 			break;
 			
 		case 'w':
-			kinect.enableDepthNearValueWhite(!kinect.isDepthNearValueWhite());
+			//kinect.enableDepthNearValueWhite(!kinect.isDepthNearValueWhite());
 			break;
 			
 		case 'o':
@@ -229,8 +229,8 @@ void ofApp::keyPressed (int key) {
 			break;
 			
 		case 'c':
-			kinect.setCameraTiltAngle(0); // zero the tilt
-			kinect.close();
+			//kinect.setCameraTiltAngle(0); // zero the tilt
+			//kinect.close();
 			break;
 			
 		case '1':
