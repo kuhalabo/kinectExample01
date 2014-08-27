@@ -18,7 +18,7 @@ const int HEIGHT = 600;
 const int CELLSIZE = 6;
 const int FULLSCREEN_CELLSIZE = 8;
 const int TICK_INTERVAL = 6;
-const int FRAMERATE = 30;
+const int FRAMERATE = 60;
 
 ///////////////////////////////////
 // いくつかのグローバル変数//
@@ -46,8 +46,8 @@ const int SCREENRATE = 1;
 float fullScreenRatio = 1.25;
 int wfull = 800;
 int hfull = 600;
-//int depth_min = 220;
-int depth_min = 150;
+int depth_min = 220;
+//int depth_min = 150;
 int alphaGray = 20;
 int alphaSpring = 50;
 int getInfo = -1;
@@ -59,8 +59,8 @@ int nCentroid = 3;
 void gameOfLife::setup() {
     fullScreen = false;
     //fullScreen = true;
-    highlight = true;
-    //highlight = false;
+    //highlight = true;
+    highlight = false;
     //active = false;
     active = true;
     
@@ -92,7 +92,7 @@ void gameOfLife::setup() {
     //ofEnableBlendMode(OF_BLENDMODE_ALPHA);
 
     kinectSetup();
-    //goFullScreen();
+    goFullScreen();
     //------------------------------------
     
 }
@@ -132,7 +132,7 @@ void gameOfLife::update() {
     //---------------------------
     // kinect
     kinectUpdate();
-    if(ofGetFrameNum() == 30) goFullScreen();
+//    if(ofGetFrameNum() == 30) goFullScreen();
     //---------------------------
     
 }
@@ -198,6 +198,11 @@ void gameOfLife::makeNextStateCurrent() {
 }
 
 void gameOfLife::draw() {
+  //------------------------------------
+  // kinect
+  kinectDraw();
+  //------------------------------------
+  
 
     //ofBackground(0, 0, 0);
 	for (int i=0; i<cols; i++) {
@@ -211,8 +216,8 @@ void gameOfLife::draw() {
 				//ofSetColor(thisCell.color.r, thisCell.color.g, thisCell.color.b, 30); // dark cell
 				ofSetColor(thisCell.color.r, thisCell.color.g, thisCell.color.b, 130); // bright cell
 				ofFill();
-//                myImage.ofImage_::draw((float)(i*cellWidth), (float)(j*cellHeight), cellWidth*2.0, cellHeight*2.0);
-                ofRect(i*cellWidth, j*cellHeight, cellWidth, cellHeight);
+                myImage.ofImage_::draw((float)(i*cellWidth), (float)(j*cellHeight), cellWidth*2.3, cellHeight*2.3);
+//                ofRect(i*cellWidth, j*cellHeight, cellWidth, cellHeight);
 				ofNoFill();
 			}
 		}
@@ -228,11 +233,6 @@ void gameOfLife::draw() {
       /*レスデータはここでクリアする*/
       datas.clear();
     }
-
-    //------------------------------------
-    // kinect
-    kinectDraw();
-    //------------------------------------
 
 }
 
@@ -721,6 +721,7 @@ void gameOfLife::kinectDraw() {
         //ofSetColor(255, 0, 255, alphaSpring);
         //ofSetLineWidth(4);
         for( int i = 0; i < nCentroid; i++){
+          if (contourFinder01.blobs.size() > 0) {
             centroX01 = contourFinder01.blobs[i].centroid.x * wfull / WIDTH * fullScreenRatio;
             centroY01 = contourFinder01.blobs[i].centroid.y * hfull / HEIGHT * fullScreenRatio;
             if(centroX01 > 0 && centroX01 < wfull && centroY01 > 0 && centroY01 < hfull){
@@ -749,6 +750,7 @@ void gameOfLife::kinectDraw() {
                     //patterns::blinker01(grid, xCell, yCell);
                 }
             }
+          }
         }
         //ofSetLineWidth(1);
         
@@ -757,7 +759,7 @@ void gameOfLife::kinectDraw() {
         //        ofSetColor(0, 255, 0, 50);
         //contourFinder02.draw(0, 0, wfull, hfull);
         // draw Centorid of contour02
-        int centroX02;
+/*        int centroX02;
         int centroY02;
         //ofSetColor(255, 255, 0, alphaSpring);
         //ofSetLineWidth(4);
@@ -789,13 +791,13 @@ void gameOfLife::kinectDraw() {
                 }
             }
         }
-        //ofSetLineWidth(1);
+*/        //ofSetLineWidth(1);
         ofSetColor(0, 0, 255, alphaGray);
         grayImage03.draw(0, 0, wfull, hfull);
         //        ofSetColor(0, 255, 0, 50);
         //contourFinder02.draw(0, 0, wfull, hfull);
         // draw Centorid of contour02
-        int centroX03;
+/*        int centroX03;
         int centroY03;
         //ofSetColor(0, 255, 255, alphaSpring);
         //ofSetLineWidth(4);
@@ -829,11 +831,11 @@ void gameOfLife::kinectDraw() {
             }
         }
         //ofSetLineWidth(1);
-        
+      */
         if( getInfo > 0 ){
             stringstream reportScreen;
             reportScreen << "wfull=" << wfull << ",hfull=" << hfull << ", cols=" << cols << ",rows=" << rows << endl
-            << "fullScreenRatio=" << fullScreenRatio << ", centroX02=" << centroX02 << ",centroY02=" << centroY02 << endl
+//            << "fullScreenRatio=" << fullScreenRatio << ", centroX02=" << centroX02 << ",centroY02=" << centroY02 << endl
             << "xCell=" << xCell << ",yCell=" << yCell << endl
             << "depth_min=" << depth_min << ", frame number=" << ofGetFrameNum() << endl
             << endl;
