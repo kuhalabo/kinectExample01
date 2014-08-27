@@ -237,7 +237,7 @@ void gameOfLife::draw() {
       datas.clear();
     }
   
-  drawBuffer();
+//  drawBuffer();
 }
 
 /*::::::::::::::::::::::::
@@ -274,7 +274,7 @@ void gameOfLife::drawBuffer() {
     float x =  ofMap(i, 0, rAudio.size(), 0, 900, true);
     ofVertex(x, 100 -rAudio[i]*180.0f);
   }
-//  ofEndShape();
+  ofEndShape(false);
 }
 
 
@@ -328,6 +328,115 @@ void gameOfLife::patternMapping() {
   death2 = new patternDetect("death2", grid3x4, patDeath2, ofColor::blue);
   deathRect = new patternDetect("deathRect", grid4x4, pathDeathRect, ofColor::blue);
 }
+
+
+
+
+/*****************************
+ * オーディオ出力
+ *****************************/
+
+void gameOfLife::audioSetup() {
+  sampleRate 			= 44100; /* Sampling Rate */
+	initialBufferSize	= 512;	/* Buffer Size. you have to fill this buffer with sound*/
+	
+	ofSoundStreamSetup(2,0, this, sampleRate, initialBufferSize, 4);
+  
+  lAudio.assign(initialBufferSize, 0.0);
+	rAudio.assign(initialBufferSize, 0.0);
+  
+  /*frequencyのマッピング*/
+  freqMap["blink1"]    = 493.883301;
+  freqMap["blink2"]    = 329.627563;
+  freqMap["glider1"]   = 293.664764;
+  freqMap["glider2"]   = 440.0;
+  freqMap["glider3"]   = 554.365234;
+  freqMap["glider4"]   = 220;
+  freqMap["line5"]     = 369.994415;
+  freqMap["death1"]    = 415.304688;
+  freqMap["death2"]    = 277.182617;
+  freqMap["deathRect"] = 554.365234;
+  
+  mode = 0;
+}
+
+void gameOfLife::audioRequested(float *output, int bufferSize, int nChannels) {
+  float currentTone[polyNum];
+  float currentAdditiveTone[polyNum];
+  int currentX[polyNum]; // 発音数に応じて得れる要素数を制限する
+  int currentY[polyNum]; // 発音数に応じて得れる要素数を制限する
+  
+  for (int i = 0; i < bufferSize; i++) {
+    if (audioTick == true) {
+      wave = 0;
+      for(int j = 0; j < polyNum; j ++ ) {
+        ADSR[j].trigger(0, adsrEnv[0]);
+        currentTone[j] = 0;
+      }
+      
+      for (int k = 0; k < 7; k ++ ) {
+        for(int l = 0; l < datas[k].x.size(); l ++ ) {
+          float career = patTofreq(datas[k].mPattern.name);
+          
+          /*決めウチのオシレーター数を超えないようのif文*/
+          if ((k * l) + l < polyNum) {
+            
+            currentTone[(k * l) + l] = career;
+            // ちょっと後で原因究明したいが、いったん変な値を汚く間引く
+            currentX[(k * l) + l] = datas[k].x[l] > 0 && datas[k].x[l] < 2000 ? datas[k].x[l] : 0;
+            currentY[(k * l) + l] = datas[k].y[l] > 0 && datas[k].y[l] < 2000 ? datas[k].y[l] : 0;
+          }
+        }
+      }
+      
+      //    float career = patTofreq(resData->mPattern.name);
+      addOscCOunter ++;
+      audioTick = false;
+    }
+    
+    if (addOscCOunter % 43 == 42) {
+      ADSRADD.trigger(0, adsrAddEnv[0]);
+      for (int i = 0; i < polyNum; i ++ ) {
+        currentAdditiveTone[i] = currentTone[i] ;
+        
+      }
+      addOscCOunter = 0;
+    }
+    
+    for(int m = 0; m < polyNum; m ++ ) {
+      ADSRout = ADSR[m].line(6, adsrEnv);
+      
+      if (currentAdditiveTone[m] != 0) {
+        wave2 += addOsc[m].sinewave(currentAdditiveTone[m]) * 0.0004;
+        mymixAdd.stereo(wave2, addoutputs, 0.5);
+
+      }
+      
+      if (currentTone[m] != 0) {
+        wave += vcFilter[m].lores(oscbank[m].sawn(currentTone[m]), (currentY[m] + 10) * 100, currentY[m] + 1 );
+        mymix.stereo(wave * ADSRout, outputs, ( 1 / ((float)(currentX[m]) ) / (float)(ofGetWidth())) );
+      }
+    }
+    
+    //    mymix.stereo(wave2, addoutputs, 0.5);
+    
+    lAudio[i] = output[i * nChannels] = outputs[0] + addoutputs[0];
+    rAudio[i] = output[i * nChannels + 1] = outputs[1] + addoutputs[1];
+  }
+}
+
+float gameOfLife::patTofreq(string patName) {
+  if (freqMap.find(patName) == freqMap.end()) {
+    // not found
+    
+    return 0.0;
+  } else {
+    // found
+    
+    return freqMap[patName];
+  }
+}
+
 
 
 /**
@@ -741,108 +850,3 @@ void gameOfLife::exit() {
 
 //--------------------------------------------------------------
 
-
-
-/*****************************
- * オーディオ出力
- *****************************/
-
-void gameOfLife::audioSetup() {
-  sampleRate 			= 44100; /* Sampling Rate */
-	initialBufferSize	= 512;	/* Buffer Size. you have to fill this buffer with sound*/
-	
-	ofSoundStreamSetup(2,0, this, sampleRate, initialBufferSize, 4);
-  
-  lAudio.assign(initialBufferSize, 0.0);
-	rAudio.assign(initialBufferSize, 0.0);
-  
-  /*frequencyのマッピング*/
-  freqMap["blink1"]    = 493.883301;
-  freqMap["blink2"]    = 329.627563;
-  freqMap["glider1"]   = 293.664764;
-  freqMap["glider2"]   = 440.0;
-  freqMap["glider3"]   = 554.365234;
-  freqMap["glider4"]   = 220;
-  freqMap["line5"]     = 369.994415;
-  freqMap["death1"]    = 415.304688;
-  freqMap["death2"]    = 277.182617;
-  freqMap["deathRect"] = 554.365234;
-  
-  mode = 0;
-}
-
-void gameOfLife::audioRequested(float *output, int bufferSize, int nChannels) {
-  float currentTone[polyNum];
-  float currentAdditiveTone[polyNum];
-  int currentX[polyNum]; // 発音数に応じて得れる要素数を制限する
-  int currentY[polyNum]; // 発音数に応じて得れる要素数を制限する
-  
-  for (int i = 0; i < bufferSize; i++) {
-    if (audioTick == true) {
-      wave = 0;
-      for(int j = 0; j < polyNum; j ++ ) {
-        ADSR[j].trigger(0, adsrEnv[0]);
-        currentTone[j] = 0;
-      }
-      
-      for (int k = 0; k < 7; k ++ ) {
-        for(int l = 0; l < datas[k].x.size(); l ++ ) {
-          float career = patTofreq(datas[k].mPattern.name);
-          
-          /*決めウチのオシレーター数を超えないようのif文*/
-          if ((k * l) + l < polyNum) {
-            
-            currentTone[(k * l) + l] = career;
-            // ちょっと後で原因究明したいが、いったん変な値を汚く間引く
-            currentX[(k * l) + l] = datas[k].x[l] > 0 && datas[k].x[l] < 2000 ? datas[k].x[l] : 0;
-            currentY[(k * l) + l] = datas[k].y[l] > 0 && datas[k].y[l] < 2000 ? datas[k].y[l] : 0;
-          }
-        }
-      }
-      
-      //    float career = patTofreq(resData->mPattern.name);
-      addOscCOunter ++;
-      audioTick = false;
-    }
-    
-    if (addOscCOunter % 43 == 42) {
-      ADSRADD.trigger(0, adsrAddEnv[0]);
-      for (int i = 0; i < polyNum; i ++ ) {
-        currentAdditiveTone[i] = currentTone[i] + (rand() % 10);
-        
-      }
-      addOscCOunter = 0;
-    }
-    
-    for(int m = 0; m < polyNum; m ++ ) {
-      ADSRout = ADSR[m].line(6, adsrEnv);
-      
-      if (currentAdditiveTone[m] != 0) {
-        wave2 += addOsc[m].triangle(currentAdditiveTone[m]) * 0.0005;
-      }
-      
-      if (currentTone[m] != 0) {
-        wave += vcFilter[m].lores(oscbank[m].sawn(currentTone[m]), (currentY[m] + 10) * 100, currentY[m] + 1 );
-        mymix.stereo(wave * ADSRout, outputs, ( 1 / ((float)(currentX[m]) ) / (float)(ofGetWidth())) );
-      }
-    }
-    
-    mymix.stereo(wave2, addoutputs, 0.5);
-    
-    //    mymix.stereo(wave2, outputs, 0.5);
-    lAudio[i] = output[i * nChannels] = outputs[0];
-    rAudio[i] = output[i * nChannels + 1] = outputs[1];
-  }
-}
-
-float gameOfLife::patTofreq(string patName) {
-  if (freqMap.find(patName) == freqMap.end()) {
-    // not found
-    
-    return 0.0;
-  } else {
-    // found
-    
-    return freqMap[patName];
-  }
-}
