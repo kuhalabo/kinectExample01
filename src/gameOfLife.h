@@ -109,10 +109,12 @@ public:
   int initialBufferSize;
   int sampleRate;
   int mode;
-  double wave, wave2, sample, ADSRout, outputs[2];
+  double wave, wave2, sample, ADSRout, outputs[2], addoutputs[2];
   ofxMaxiMix mymix;
+  ofxMaxiMix mymixAdd;
   ofxMaxiOsc osc;
   double adsrEnv[6]={0, 10, 0.005, 10, 0, 20};
+  double adsrAddEnv[6]={0, 100, 0.005, 3000, 0, 2000};
   //  vector <ofxMaxiOsc> oscbank;
   vector <float> lAudio;
   vector <float> rAudio;
@@ -123,6 +125,7 @@ public:
   ofxMaxiOsc oscbank[30];
   ofxMaxiOsc addOsc[30];
   ofxMaxiEnvelope ADSR[30];
+  ofxMaxiEnvelope ADSRADD;
   ofxMaxiFilter vcFilter[30];
   int addOscCOunter = 0;
 

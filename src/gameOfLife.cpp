@@ -18,7 +18,7 @@ const int HEIGHT = 600;
 const int CELLSIZE = 6;
 const int FULLSCREEN_CELLSIZE = 8;
 const int TICK_INTERVAL = 6;
-const int FRAMERATE = 60;
+const int FRAMERATE = 55;
 
 ///////////////////////////////////
 // いくつかのグローバル変数//
@@ -30,6 +30,9 @@ patternDetect *glider2;
 patternDetect *glider3;
 patternDetect *glider4;
 patternDetect *line5;
+patternDetect *death1;
+patternDetect *death2;
+patternDetect *deathRect;
 
 vector<resPattern> datas;
 vector<resPattern>::iterator resData;
@@ -244,9 +247,9 @@ void gameOfLife::drawingResPatterns(vector<resPattern> &datas) {
     resData->x.size();
     if (resData->x.size() != 0) {
       for (int h=0; h < resData->x.size(); h++) {
-        for (int i=0; i< resData->mPattern.patternGrid[0]; i++) {
-          for (int j=0; j < resData->mPattern.patternGrid[1]; j++) {
-            if (resData->mPattern.pattern[resData->mPattern.patternGrid[0] * j + i ] == 1) {
+        for (int i=0; i< resData->mPattern.patternGrid[1]; i++) {
+          for (int j=0; j < resData->mPattern.patternGrid[0]; j++) {
+            if (resData->mPattern.pattern[resData->mPattern.patternGrid[1] * j + i ] == 1) {
               
               /*検出描画チェックログ よくつかう*/
               //              cout << resData->mPattern.name << endl;
@@ -282,27 +285,38 @@ void gameOfLife::clear() {
  * 検出パターンを初期化するメソッド
  *****************************/
 void gameOfLife::patternMapping() {
-    
-  int grid1[] = {1, 7};
-  int grid2[] = {3, 3};
+  int grid1x7[] = {1, 7};
+  int grid3x3[] = {3, 3};
+  int grid3x4[] = {3, 4};
+  int grid4x3[] = {4, 3};
+  int grid2x2[] = {2, 2};
+  int grid4x4[] = {4, 4};
+  
+  
   int pat1[] = {0, 0, 0, 1, 1, 1, 0, 0, 0};
   int pat2[] = {0, 1, 0, 0, 1, 0, 0, 1, 0};
   int pat3[] = {0, 1, 1, 1, 1, 1, 0};
+  
+  int patDeath1[] = {0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0};
+  int patDeath2[] = {0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0};
+  int pathDeathRect[] = {0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0};
   
   int patGlider1[] = {0, 1, 0, 0, 0, 1, 1, 1, 1};
   int patGlider2[] = {0, 0, 1, 1, 0, 1, 0, 1, 1};
   int patGlider3[] = {1, 0, 0, 0, 1, 1, 1, 1, 0};
   int patGlider4[] = {0, 0, 1, 1, 1, 0, 0, 1, 1};
   
-  blink1 = new patternDetect("blink1", grid2, pat1, ofColor::cyan);
-  blink2 = new patternDetect("blink2", grid2, pat2, ofColor::cyan);
+  blink1 = new patternDetect("blink1", grid3x3, pat1, ofColor::cyan);
+  blink2 = new patternDetect("blink2", grid3x3, pat2, ofColor::cyan);
+  glider1 = new patternDetect("glider1", grid3x3, patGlider1, ofColor::cyan);
+  glider2 = new patternDetect("glider2", grid3x3, patGlider2, ofColor::cyan);
+  glider3 = new patternDetect("glider3", grid3x3, patGlider3, ofColor::cyan);
+  glider4 = new patternDetect("glider4", grid3x3, patGlider4, ofColor::cyan);
+  line5 = new patternDetect("line5", grid1x7, pat3, ofColor::cyan);
   
-  glider1 = new patternDetect("glider1", grid2, patGlider1, ofColor::cyan);
-  glider2 = new patternDetect("glider2", grid2, patGlider2, ofColor::cyan);
-  glider3 = new patternDetect("glider3", grid2, patGlider3, ofColor::cyan);
-  glider4 = new patternDetect("glider4", grid2, patGlider4, ofColor::cyan);
-  
-  line5 = new patternDetect("line5", grid2, pat3, ofColor::cyan);
+  death1 = new patternDetect("death1", grid4x3, patDeath1, ofColor::blue);
+  death2 = new patternDetect("death2", grid3x4, patDeath2, ofColor::blue);
+  deathRect = new patternDetect("deathRect", grid4x4, pathDeathRect, ofColor::blue);
 }
 
 
@@ -861,7 +875,6 @@ void gameOfLife::exit() {
  *****************************/
 
 void gameOfLife::audioSetup() {
-  
   sampleRate 			= 44100; /* Sampling Rate */
 	initialBufferSize	= 512;	/* Buffer Size. you have to fill this buffer with sound*/
 	
@@ -871,18 +884,18 @@ void gameOfLife::audioSetup() {
 	rAudio.assign(initialBufferSize, 0.0);
   
   /*frequencyのマッピング*/
-  freqMap["blink1"] = 493.883301;
-  freqMap["blink2"] = 329.627563;
-  
-  freqMap["glider1"] = 277.182617;
-  freqMap["glider2"] = 369.994415;
-  freqMap["glider3"] = 415.304688;
-  freqMap["glider4"] = 440.0;
-  
-  freqMap["line5"] = 554.365234;
+  freqMap["blink1"]    = 493.883301;
+  freqMap["blink2"]    = 329.627563;
+  freqMap["glider1"]   = 293.664764;
+  freqMap["glider2"]   = 440.0;
+  freqMap["glider3"]   = 554.365234;
+  freqMap["glider4"]   = 220;
+  freqMap["line5"]     = 369.994415;
+  freqMap["death1"]    = 415.304688;
+  freqMap["death2"]    = 277.182617;
+  freqMap["deathRect"] = 554.365234;
   
   mode = 0;
-  
 }
 
 void gameOfLife::audioOut(float *output, int bufferSize, int nChannels) {
@@ -892,22 +905,8 @@ void gameOfLife::audioOut(float *output, int bufferSize, int nChannels) {
   int currentY[polyNum]; // 発音数に応じて得れる要素数を制限する
   
   for (int i = 0; i < bufferSize; i++) {
-    //    for(resData = datas.begin(); resData != datas.end(); ++resData) {
-    //      float career = patTofreq(resData->mPattern.name);
-    //      for(int i = 0; i < resData->x.size(); i++) {
-    //        wave = osc.sinewave(career) * resData->y[i] * 0.01;
-    //        float pan = 1 / resData->x[i];
-    //        mymix.stereo(wave, outputs, pan);
-    //      }
-    
-    //
-    //      lAudio[i] = output[i * nChannels] = outputs[0];
-    //      rAudio[i] = output[i * nChannels + 1] = outputs[1];
-    //    }
-    
     if (audioTick == true) {
       wave = 0;
-      
       for(int j = 0; j < polyNum; j ++ ) {
         ADSR[j].trigger(0, adsrEnv[0]);
         currentTone[j] = 0;
@@ -934,27 +933,33 @@ void gameOfLife::audioOut(float *output, int bufferSize, int nChannels) {
     }
     
     if (addOscCOunter % 43 == 42) {
+      ADSRADD.trigger(0, adsrAddEnv[0]);
       for (int i = 0; i < polyNum; i ++ ) {
-        currentAdditiveTone[i] = currentTone[i] + (rand() % 10) ;
+        currentAdditiveTone[i] = currentTone[i] + (rand() % 10);
+        
       }
       addOscCOunter = 0;
     }
     
     for(int m = 0; m < polyNum; m ++ ) {
       ADSRout = ADSR[m].line(6, adsrEnv);
+      
+      //      if (currentAdditiveTone[m] != 0) {
+      //        wave2 += addOsc[m].triangle(currentAdditiveTone[m]);
+      //        mymix.stereo(wave2, outputs, 0.5);
+      //      }
+      
       if (currentTone[m] != 0) {
-        wave += oscbank[m].square(currentTone[m]);
+        wave += vcFilter[m].lores(oscbank[m].sawn(currentTone[m]), (currentY[m] + 10) * 100, currentY[m] + 1 );
         mymix.stereo(wave * ADSRout, outputs, ( 1 / ((float)(currentX[m]) ) / (float)(ofGetWidth())) );
       }
       
-      if (currentAdditiveTone[m] != 0) {
-        wave2 += addOsc[m].sinewave(currentAdditiveTone[m]) * 0.001;
-      }
+      
     }
     
     //    mymix.stereo(wave2, outputs, 0.5);
-    lAudio[i] = output[i * nChannels] = outputs[0] + wave2;
-    rAudio[i] = output[i * nChannels + 1] = outputs[1] +wave2;
+    lAudio[i] = output[i * nChannels] = outputs[0];
+    rAudio[i] = output[i * nChannels + 1] = outputs[1];
   }
 }
 
