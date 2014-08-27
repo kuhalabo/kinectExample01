@@ -127,8 +127,11 @@ void gameOfLife::update() {
         datas.push_back(glider2->detection(grid, rows, cols));
         datas.push_back(glider3->detection(grid, rows, cols));
         datas.push_back(glider4->detection(grid, rows, cols));
-      
         datas.push_back(line5->detection(grid, rows, cols));
+        
+        datas.push_back(death1->detection(grid, rows, cols));
+        datas.push_back(death2->detection(grid, rows, cols));
+        datas.push_back(deathRect->detection(grid, rows, cols));
         audioTick = true;
         //        oscSending(datas);
     }
@@ -251,10 +254,8 @@ void gameOfLife::drawingResPatterns(vector<resPattern> &datas) {
         for (int i=0; i< resData->mPattern.patternGrid[1]; i++) {
           for (int j=0; j < resData->mPattern.patternGrid[0]; j++) {
             if (resData->mPattern.pattern[resData->mPattern.patternGrid[1] * j + i ] == 1) {
-              
               /*検出描画チェックログ よくつかう*/
               //              cout << resData->mPattern.name << endl;
-              
               ofSetColor(resData->mPattern.color.r, resData->mPattern.color.g, resData->mPattern.color.b, 200);
               ofFill();
               myImage.ofImage_::draw((float)((i + resData->x.at(h)) * cellWidth) - cellWidth / 2, (float)((j + resData->y.at(h)) * cellHeight) - cellHeight / 2, cellWidth*3.0, cellHeight*3.0);
@@ -363,6 +364,7 @@ void gameOfLife::audioSetup() {
 void gameOfLife::audioRequested(float *output, int bufferSize, int nChannels) {
   float currentTone[polyNum];
   float currentAdditiveTone[polyNum];
+  float currentTempFilterNum;
   int currentX[polyNum]; // 発音数に応じて得れる要素数を制限する
   int currentY[polyNum]; // 発音数に応じて得れる要素数を制限する
   
@@ -374,7 +376,7 @@ void gameOfLife::audioRequested(float *output, int bufferSize, int nChannels) {
         currentTone[j] = 0;
       }
       
-      for (int k = 0; k < 7; k ++ ) {
+      for (int k = 0; k < 10; k ++ ) {
         for(int l = 0; l < datas[k].x.size(); l ++ ) {
           float career = patTofreq(datas[k].mPattern.name);
           
@@ -394,11 +396,10 @@ void gameOfLife::audioRequested(float *output, int bufferSize, int nChannels) {
       audioTick = false;
     }
     
-    if (addOscCOunter % 43 == 42) {
-      ADSRADD.trigger(0, adsrAddEnv[0]);
+    if (addOscCOunter % 70 == 69) {
       for (int i = 0; i < polyNum; i ++ ) {
         currentAdditiveTone[i] = currentTone[i] ;
-        
+        currentTempFilterNum = currentY[0];
       }
       addOscCOunter = 0;
     }
@@ -407,9 +408,7 @@ void gameOfLife::audioRequested(float *output, int bufferSize, int nChannels) {
       ADSRout = ADSR[m].line(6, adsrEnv);
       
       if (currentAdditiveTone[m] != 0) {
-        wave2 += addOsc[m].sinewave(currentAdditiveTone[m]) * 0.0004;
-        mymixAdd.stereo(wave2, addoutputs, 0.5);
-
+        wave2 += addOsc[m].saw(currentAdditiveTone[m]) * 0.05;
       }
       
       if (currentTone[m] != 0) {
@@ -418,21 +417,20 @@ void gameOfLife::audioRequested(float *output, int bufferSize, int nChannels) {
       }
     }
     
-    //    mymix.stereo(wave2, addoutputs, 0.5);
+    wave2 *= 0.1;
+    mymixAdd.stereo(vcAddFilter.lores(wave2, (currentTempFilterNum + 10) * 100, 10), addoutputs, 0.5);
     
-    lAudio[i] = output[i * nChannels] = outputs[0] + addoutputs[0];
-    rAudio[i] = output[i * nChannels + 1] = outputs[1] + addoutputs[1];
+    lAudio[i] = output[i * nChannels] =  addoutputs[0] + outputs[0];
+    rAudio[i] = output[i * nChannels + 1] = addoutputs[1] + outputs[1] ;
   }
 }
 
 float gameOfLife::patTofreq(string patName) {
   if (freqMap.find(patName) == freqMap.end()) {
     // not found
-    
     return 0.0;
   } else {
     // found
-    
     return freqMap[patName];
   }
 }

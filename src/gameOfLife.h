@@ -115,7 +115,7 @@ public:
   ofxMaxiMix mymixAdd;
   ofxMaxiOsc osc;
   double adsrEnv[6]={0, 10, 0.005, 10, 0, 20};
-  double adsrAddEnv[6]={0, 100, 0.005, 3000, 0, 2000};
+  double adsrAddEnv[6]={0, 100, 0.01, 2900, 0, 20};
   //  vector <ofxMaxiOsc> oscbank;
   vector <float> lAudio;
   vector <float> rAudio;
@@ -128,6 +128,7 @@ public:
   ofxMaxiEnvelope ADSR[30];
   ofxMaxiEnvelope ADSRADD;
   ofxMaxiFilter vcFilter[30];
+  ofxMaxiFilter vcAddFilter;
   int addOscCOunter = 0;
 
 private:
