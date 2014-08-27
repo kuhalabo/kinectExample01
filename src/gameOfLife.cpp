@@ -49,9 +49,9 @@ const int SCREENRATE = 1;
 float fullScreenRatio = 1.25;
 int wfull = 800;
 int hfull = 600;
-int depth_min = 220;
-//int depth_min = 150;
-int alphaGray = 20;
+//int depth_min = 220;
+int depth_min = 150;
+int alphaGray = 200;
 int alphaSpring = 50;
 int getInfo = -1;
 int cellDirection = 1;
@@ -74,7 +74,7 @@ void gameOfLife::setup() {
     
 	//ofBackground(ofColor::white);
     ofBackground(0, 0, 0);
-	//ofSetBackgroundAuto(true);
+//	ofSetBackgroundAuto(true);
 	ofSetBackgroundAuto(false);
 	ofSetWindowTitle("Conway's Game of Life");
 	ofSetFrameRate(FRAMERATE);
@@ -91,8 +91,8 @@ void gameOfLife::setup() {
     ofEnableSmoothing();
     //    glEnable(GL_BLEND);
     ofEnableAlphaBlending();
-    ofEnableBlendMode(OF_BLENDMODE_ADD);
-    //ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+    //ofEnableBlendMode(OF_BLENDMODE_ADD);
+    ofEnableBlendMode(OF_BLENDMODE_ALPHA);
 
     kinectSetup();
     goFullScreen();
@@ -236,7 +236,8 @@ void gameOfLife::draw() {
       /*レスデータはここでクリアする*/
       datas.clear();
     }
-
+  
+  drawBuffer();
 }
 
 /*::::::::::::::::::::::::
@@ -265,6 +266,15 @@ void gameOfLife::drawingResPatterns(vector<resPattern> &datas) {
       }
     }
   }
+}
+
+void gameOfLife::drawBuffer() {
+  ofBeginShape();
+  for (int i = 0; i < rAudio.size(); i++){
+    float x =  ofMap(i, 0, rAudio.size(), 0, 900, true);
+    ofVertex(x, 100 -rAudio[i]*180.0f);
+  }
+//  ofEndShape();
 }
 
 
@@ -384,8 +394,6 @@ void gameOfLife::pause() {
 void gameOfLife::mousePressed(int x, int y, int button) {
     int xcell = x/cellWidth;
 	int ycell = y/cellHeight;
-//	grid[xcell][ycell].currState = !grid[xcell][ycell].currState;
-//    patterns::glider01(grid, xcell, ycell);
     switch (cellDirection) {
         case 0:
             patterns::glider02(grid, xcell, ycell);
@@ -432,15 +440,10 @@ void gameOfLife::keyPressed(int key) {
             //-------------------------
             // for kinect by kuha
         case '1':
-            //patterns::glider01(grid, 100, 20);
-            //patterns::glider03(grid, 100, 40);
             break;
         case '2':
-            //patterns::glider02(grid, 100, 10);
-            //patterns::glider04(grid, 100, 100);
             break;
         case 'b':
-            //patterns::blinker01(grid, 50, 20);
             break;
         case 'D': // 0:far -> 255:near
             depth_min = min(depth_min + 1, 255);
@@ -487,18 +490,10 @@ void gameOfLife::keyPressed(int key) {
 //------------------------------------
 // kinect setup
 void gameOfLife::kinectSetup() {
-    // enable depth->video image calibration
 	kinect.setRegistration(true);
     
 	kinect.init();
-	//kinect.init(true); // shows infrared instead of RGB video image
-	//kinect.init(false, false); // disable video image (faster fps)
-	
 	kinect.open();		// opens first available kinect
-	//kinect.open(1);	// open a kinect by id, starting with 0 (sorted by serial # lexicographically))
-	//kinect.open("A00362A08602047A");	// open a kinect using it's unique serial #
-	
-	// print the intrinsic IR sensor values
 	if(kinect.isConnected()) {
 		ofLogNotice() << "sensor-emitter dist: " << kinect.getSensorEmitterDistance() << "cm";
 		ofLogNotice() << "sensor-camera dist:  " << kinect.getSensorCameraDistance() << "cm";
@@ -512,15 +507,7 @@ void gameOfLife::kinectSetup() {
 	grayImage03.allocate(kinect.width, kinect.height);
 	grayThreshNear.allocate(kinect.width, kinect.height);
 	grayThreshFar.allocate(kinect.width, kinect.height);
-    
-    /*
-     //nearThreshold = 230;
-     //farThreshold = 70;
-     nearThreshold01 = 250;
-     farThreshold01 = 240;
-     nearThreshold02 = 240;
-     farThreshold02 = 230;
-     */
+  
 	nearThreshold01 = depth_min + 30;
 	farThreshold01 = depth_min + 20;
 	nearThreshold02 = depth_min + 20;
@@ -537,19 +524,8 @@ void gameOfLife::kinectSetup() {
 //------------------------------------
 // kinect update
 void gameOfLife::kinectUpdate() {
-	//ofBackground(100, 100, 100);
-	//ofBackground(255, 255, 100);
-	
 	kinect.update();
-    
-	// there is a new frame and we are connected
 	if(kinect.isFrameNew()) {
-		
-        //左右反転
-        //colorImg.mirror(false, true);
-        
-        // 01 layer
-        // load grayscale depth image from the kinect source
 		grayImage01.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
 		
 		// we do two thresholds - one for the far plane and one for the near plane
@@ -578,9 +554,6 @@ void gameOfLife::kinectUpdate() {
 		}
 		// update the cv images
 		grayImage01.flagImageChanged();
-		
-		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
-		// also, find holes is set to true so we will get interior contours as well....
 		contourFinder01.findContours(grayImage01, 10, (kinect.width*kinect.height)/2, 20, false);
         
         // 02 layer
@@ -604,23 +577,15 @@ void gameOfLife::kinectUpdate() {
             for(int i = 0; i < numPixels; i++) {
                 if(pix[i] < nearThreshold02 && pix[i] > farThreshold02) {
                     pix[i] = 255;
-                    //pix[i] = 25;
                 } else {
                     pix[i] = 0;
-                    //pix[i] = 23;
                 }
             }
         }
         
-		// update the cv images
+
         grayImage02.flagImageChanged();
-		
-		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
-		// also, find holes is set to true so we will get interior contours as well....
         contourFinder02.findContours(grayImage02, 10, (kinect.width*kinect.height)/2, 20, false);
-        
-        // 03 layer
-        // load grayscale depth image from the kinect source
         grayImage03.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
         
         // we do two thresholds - one for the far plane and one for the near plane
@@ -660,14 +625,7 @@ void gameOfLife::kinectUpdate() {
 //---------------------
 // kinect draw
 void gameOfLife::kinectDraw() {
-	//ofSetColor(255, 255, 0, 100);
-    //ofNoFill();
-    //ofRect(0, 0, ofGetWidth(), ofGetHeight());
-    //ofBackground(50, 50, 0);
-	
-    //kinect.draw(0, 0, kinect.width, kinect.height);
-    //kinect.drawDepth(kinect.width, 0, kinect.width, kinect.height);
-    
+  
     // draw from the live kinect
     if (!fullScreen) {
         kinect.drawDepth(10 + 256 * SCREENRATE, 10, 400, 300);
@@ -718,22 +676,10 @@ void gameOfLife::kinectDraw() {
     }
     else{
         int xCell, yCell;
-//        kinect.drawDepth(0, -100, wfull, hfull);
-
-        //ofSetColor(255, 255, 0, 100);
-        //ofNoFill();
-        //ofRect(0, 0, wfull,hfull);
-        //ofRect(0, 0, ofGetWidth(), ofGetHeight());
-        
         ofSetColor(255, 0, 0, alphaGray);
         grayImage01.draw(0, 0, wfull, hfull);
-        //        ofSetColor(255, 0, 0, 100);
-        //contourFinder01.draw(0, 0, wfull, hfull);
-        // draw Centorid of contour01
         int centroX01;
         int centroY01;
-        //ofSetColor(255, 0, 255, alphaSpring);
-        //ofSetLineWidth(4);
         for( int i = 0; i < nCentroid; i++){
           if (contourFinder01.blobs.size() > 0) {
             centroX01 = contourFinder01.blobs[i].centroid.x * wfull / WIDTH * fullScreenRatio;
@@ -766,86 +712,13 @@ void gameOfLife::kinectDraw() {
             }
           }
         }
-        //ofSetLineWidth(1);
-        
         ofSetColor(0, 255, 0, alphaGray);
         grayImage02.draw(0, 0, wfull, hfull);
-        //        ofSetColor(0, 255, 0, 50);
-        //contourFinder02.draw(0, 0, wfull, hfull);
-        // draw Centorid of contour02
-/*        int centroX02;
-        int centroY02;
-        //ofSetColor(255, 255, 0, alphaSpring);
-        //ofSetLineWidth(4);
-        for( int i = 0; i < nCentroid; i++){
-            centroX02 = contourFinder02.blobs[i].centroid.x * wfull / WIDTH * fullScreenRatio;
-            centroY02 = contourFinder02.blobs[i].centroid.y * hfull / HEIGHT * fullScreenRatio;
-            if(centroX02 > 0 && centroX02 < wfull && centroY02 > 0 && centroY02 < hfull){
-                xCell = centroX02 * cols / wfull;
-                yCell = centroY02 * rows / hfull;
-                //ofCircle(centroX02, centroY02, 30); // Centroid draw
-                if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
-                    switch (cellDirection) {
-                        case 0:
-                            patterns::glider01(grid, xCell, yCell);
-                            break;
-                        case 1:
-                            patterns::glider03(grid, xCell, yCell);
-                            break;
-                        case 2:
-                            patterns::glider02(grid, xCell, yCell);
-                            //patterns::blinker01(grid, xCell, yCell);
-                            break;
-                        case 3:
-                            patterns::glider04(grid, xCell, yCell);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-        }
-*/        //ofSetLineWidth(1);
+
+      
         ofSetColor(0, 0, 255, alphaGray);
         grayImage03.draw(0, 0, wfull, hfull);
-        //        ofSetColor(0, 255, 0, 50);
-        //contourFinder02.draw(0, 0, wfull, hfull);
-        // draw Centorid of contour02
-/*        int centroX03;
-        int centroY03;
-        //ofSetColor(0, 255, 255, alphaSpring);
-        //ofSetLineWidth(4);
-        for( int i = 0; i < nCentroid; i++){
-            centroX03 = contourFinder03.blobs[i].centroid.x * wfull / WIDTH * fullScreenRatio;
-            centroY03 = contourFinder03.blobs[i].centroid.y * hfull / HEIGHT * fullScreenRatio;
-            if(centroX03 > 0 && centroX03 < wfull && centroY03 > 0 && centroY03 < hfull){
-                xCell = centroX03 * cols / wfull;
-                yCell = centroY03 * rows / hfull;
-                //ofCircle(centroX03, centroY03, 30); // Centroid draw
-                if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
-                    switch (cellDirection) {
-                        case 0:
-                            patterns::glider02(grid, xCell, yCell);
-                            break;
-                        case 1:
-                            patterns::glider04(grid, xCell, yCell);
-                            //patterns::blinker01(grid, xCell, yCell);
-                            break;
-                        case 2:
-                            patterns::glider01(grid, xCell, yCell);
-                            break;
-                        case 3:
-                            patterns::glider03(grid, xCell, yCell);
-                            break;
-                        default:
-                            break;
-                    }
-                    if(cellDirection < 4) cellDirection++; else cellDirection = 0;
-                }
-            }
-        }
-        //ofSetLineWidth(1);
-      */
+      
         if( getInfo > 0 ){
             stringstream reportScreen;
             reportScreen << "wfull=" << wfull << ",hfull=" << hfull << ", cols=" << cols << ",rows=" << rows << endl
@@ -878,7 +751,7 @@ void gameOfLife::audioSetup() {
   sampleRate 			= 44100; /* Sampling Rate */
 	initialBufferSize	= 512;	/* Buffer Size. you have to fill this buffer with sound*/
 	
-	ofSoundStreamSetup(2,0,this, sampleRate, initialBufferSize, 4);
+	ofSoundStreamSetup(2,0, this, sampleRate, initialBufferSize, 4);
   
   lAudio.assign(initialBufferSize, 0.0);
 	rAudio.assign(initialBufferSize, 0.0);
@@ -898,7 +771,7 @@ void gameOfLife::audioSetup() {
   mode = 0;
 }
 
-void gameOfLife::audioOut(float *output, int bufferSize, int nChannels) {
+void gameOfLife::audioRequested(float *output, int bufferSize, int nChannels) {
   float currentTone[polyNum];
   float currentAdditiveTone[polyNum];
   int currentX[polyNum]; // 発音数に応じて得れる要素数を制限する
@@ -944,18 +817,17 @@ void gameOfLife::audioOut(float *output, int bufferSize, int nChannels) {
     for(int m = 0; m < polyNum; m ++ ) {
       ADSRout = ADSR[m].line(6, adsrEnv);
       
-      //      if (currentAdditiveTone[m] != 0) {
-      //        wave2 += addOsc[m].triangle(currentAdditiveTone[m]);
-      //        mymix.stereo(wave2, outputs, 0.5);
-      //      }
+      if (currentAdditiveTone[m] != 0) {
+        wave2 += addOsc[m].triangle(currentAdditiveTone[m]) * 0.0005;
+      }
       
       if (currentTone[m] != 0) {
         wave += vcFilter[m].lores(oscbank[m].sawn(currentTone[m]), (currentY[m] + 10) * 100, currentY[m] + 1 );
         mymix.stereo(wave * ADSRout, outputs, ( 1 / ((float)(currentX[m]) ) / (float)(ofGetWidth())) );
       }
-      
-      
     }
+    
+    mymix.stereo(wave2, addoutputs, 0.5);
     
     //    mymix.stereo(wave2, outputs, 0.5);
     lAudio[i] = output[i * nChannels] = outputs[0];

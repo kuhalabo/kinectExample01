@@ -103,7 +103,8 @@ public:
   /************************/
   // ofxMaximまわり変数宣言 //
   /***********************/
-  void audioOut(float * output, int bufferSize, int nChannels);
+  void audioRequested(float * output, int bufferSize, int nChannels);
+  void drawBuffer();
   void audioSetup();
   float patTofreq(string patName);
   int initialBufferSize;
