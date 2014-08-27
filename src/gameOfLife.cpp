@@ -670,71 +670,73 @@ void gameOfLife::kinectDraw() {
         ofSetColor(255, 0, 255, alphaSpring);
         ofSetLineWidth(4);
         for( int i = 0; i < 3; i++){
+          if (contourFinder01.blobs.size() > 0) {
             centroX01 = contourFinder01.blobs[i].centroid.x * wfull / WIDTH * 1.25;
             centroY01 = contourFinder01.blobs[i].centroid.y * hfull / HEIGHT * 1.25;
             if(centroX01 > 0 && centroX01 < wfull && centroY01 > 0 && centroY01 < hfull){
-                xCell = centroX01 * cols / wfull;
-                yCell = centroY01 * rows / hfull;
-                ofCircle(centroX01, centroY01, 30); // Centroid draw
-                if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
-                    //patterns::blinker01(grid, xCell, yCell);
-                    patterns::blinker01(grid, xCell, yCell);
-                }
+              xCell = centroX01 * cols / wfull;
+              yCell = centroY01 * rows / hfull;
+              ofCircle(centroX01, centroY01, 30); // Centroid draw
+              if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
+                //patterns::blinker01(grid, xCell, yCell);
+                patterns::blinker01(grid, xCell, yCell);
+              }
             }
+          }         
         }
         ofSetLineWidth(1);
         
-        ofSetColor(0, 255, 0, alphaGray);
-        grayImage02.draw(0, 0, wfull, hfull);
-        //        ofSetColor(0, 255, 0, 50);
-        //        contourFinder02.draw(0, 0, wfull, hfull);
-        // draw Centorid of contour02
-        int centroX02;
-        int centroY02;
-        ofSetColor(255, 255, 0, alphaSpring);
-        ofSetLineWidth(4);
-        for( int i = 0; i < 3; i++){
-            centroX02 = contourFinder02.blobs[i].centroid.x * wfull / WIDTH * 1.25;
-            centroY02 = contourFinder02.blobs[i].centroid.y * hfull / HEIGHT * 1.25;
-            if(centroX02 > 0 && centroX02 < wfull && centroY02 > 0 && centroY02 < hfull){
-                xCell = centroX02 * cols / wfull;
-                yCell = centroY02 * rows / hfull;
-                ofCircle(centroX02, centroY02, 30); // Centroid draw
-                if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
-                    //patterns::blinker01(grid, xCell, yCell);
-                    patterns::glider01(grid, xCell, yCell);
-                }
-            }
-        }
-        ofSetLineWidth(1);
-        
-        ofSetColor(0, 0, 255, alphaGray);
-        grayImage03.draw(0, 0, wfull, hfull);
-        //        ofSetColor(0, 255, 0, 50);
-        //        contourFinder02.draw(0, 0, wfull, hfull);
-        // draw Centorid of contour02
-        int centroX03;
-        int centroY03;
-        ofSetColor(0, 255, 255, alphaSpring);
-        ofSetLineWidth(4);
-        for( int i = 0; i < 3; i++){
-            centroX03 = contourFinder03.blobs[i].centroid.x * wfull / WIDTH * 1.25;
-            centroY03 = contourFinder03.blobs[i].centroid.y * hfull / HEIGHT * 1.25;
-            if(centroX03 > 0 && centroX03 < wfull && centroY03 > 0 && centroY03 < hfull){
-                xCell = centroX03 * cols / wfull;
-                yCell = centroY03 * rows / hfull;
-                ofCircle(centroX03, centroY03, 30); // Centroid draw
-                if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
-                    //patterns::blinker01(grid, xCell, yCell);
-                    patterns::glider01(grid, xCell, yCell);
-                }
-            }
-        }
-        ofSetLineWidth(1);
-        
+//        ofSetColor(0, 255, 0, alphaGray);
+//        grayImage02.draw(0, 0, wfull, hfull);
+//        //        ofSetColor(0, 255, 0, 50);
+//        //        contourFinder02.draw(0, 0, wfull, hfull);
+//        // draw Centorid of contour02
+//        int centroX02;
+//        int centroY02;
+//        ofSetColor(255, 255, 0, alphaSpring);
+//        ofSetLineWidth(4);
+//        for( int i = 0; i < 3; i++){
+//            centroX02 = contourFinder02.blobs[i].centroid.x * wfull / WIDTH * 1.25;
+//            centroY02 = contourFinder02.blobs[i].centroid.y * hfull / HEIGHT * 1.25;
+//            if(centroX02 > 0 && centroX02 < wfull && centroY02 > 0 && centroY02 < hfull){
+//                xCell = centroX02 * cols / wfull;
+//                yCell = centroY02 * rows / hfull;
+//                ofCircle(centroX02, centroY02, 30); // Centroid draw
+//                if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
+//                    //patterns::blinker01(grid, xCell, yCell);
+//                    patterns::glider01(grid, xCell, yCell);
+//                }
+//            }
+//        }
+//        ofSetLineWidth(1);
+//        
+//        ofSetColor(0, 0, 255, alphaGray);
+//        grayImage03.draw(0, 0, wfull, hfull);
+//        //        ofSetColor(0, 255, 0, 50);
+//        //        contourFinder02.draw(0, 0, wfull, hfull);
+//        // draw Centorid of contour02
+//        int centroX03;
+//        int centroY03;
+//        ofSetColor(0, 255, 255, alphaSpring);
+//        ofSetLineWidth(4);
+//        for( int i = 0; i < 3; i++){
+//            centroX03 = contourFinder03.blobs[i].centroid.x * wfull / WIDTH * 1.25;
+//            centroY03 = contourFinder03.blobs[i].centroid.y * hfull / HEIGHT * 1.25;
+//            if(centroX03 > 0 && centroX03 < wfull && centroY03 > 0 && centroY03 < hfull){
+//                xCell = centroX03 * cols / wfull;
+//                yCell = centroY03 * rows / hfull;
+//                ofCircle(centroX03, centroY03, 30); // Centroid draw
+//                if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
+//                    //patterns::blinker01(grid, xCell, yCell);
+//                    patterns::glider01(grid, xCell, yCell);
+//                }
+//            }
+//        }
+//        ofSetLineWidth(1);
+      
         stringstream reportScreen;
         reportScreen << "wfull=" << wfull << ",hfull=" << hfull << ", cols=" << cols << ",rows=" << rows << endl
-        << "centroX02=" << centroX02 << ",centroY02=" << centroY02 << endl
+//        << "centroX02=" << centroX02 << ",centroY02=" << centroY02 << endl
         << "xCell=" << xCell << ",yCell=" << yCell << endl
         << "depth_min=" << depth_min << ", frame number=" << ofGetFrameNum() << endl
         << endl;
