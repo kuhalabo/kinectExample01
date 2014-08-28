@@ -10,12 +10,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "src/gameOfLife.cpp"
-            timestampString = "430756478.87803"
+            timestampString = "430876732.504243"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "377"
-            endingLineNumber = "377"
-            landmarkName = "gameOfLife::mousePressed(int x, int y, int button)"
+            startingLineNumber = "376"
+            endingLineNumber = "376"
+            landmarkName = "gameOfLife::audioRequested(float *output, int bufferSize, int nChannels)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -26,28 +26,28 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "src/gameOfLife.cpp"
-            timestampString = "430756478.87803"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "379"
-            endingLineNumber = "379"
-            landmarkName = "gameOfLife::mousePressed(int x, int y, int button)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "src/gameOfLife.cpp"
-            timestampString = "430756478.87803"
+            timestampString = "430876732.504243"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "378"
             endingLineNumber = "378"
-            landmarkName = "gameOfLife::mousePressed(int x, int y, int button)"
+            landmarkName = "gameOfLife::audioRequested(float *output, int bufferSize, int nChannels)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "src/gameOfLife.cpp"
+            timestampString = "430876732.504243"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "377"
+            endingLineNumber = "377"
+            landmarkName = "gameOfLife::audioRequested(float *output, int bufferSize, int nChannels)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

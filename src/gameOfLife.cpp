@@ -49,12 +49,12 @@ const int SCREENRATE = 1;
 float fullScreenRatio = 1.25;
 int wfull = 800;
 int hfull = 600;
-//int depth_min = 220;
-int depth_min = 150;
-int alphaGray = 200;
+int depth_min = 220;
+//int depth_min = 150;
+int alphaGray = 50;
 int alphaSpring = 50;
 int getInfo = -1;
-int cellDirection = 1;
+int cellDirection = 0;
 int nCentroid = 3;
 //------------------------
 
@@ -91,8 +91,8 @@ void gameOfLife::setup() {
     ofEnableSmoothing();
     //    glEnable(GL_BLEND);
     ofEnableAlphaBlending();
-    //ofEnableBlendMode(OF_BLENDMODE_ADD);
-    ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
+    //ofEnableBlendMode(OF_BLENDMODE_ALPHA);
 
     kinectSetup();
     goFullScreen();
@@ -138,7 +138,6 @@ void gameOfLife::update() {
     //---------------------------
     // kinect
     kinectUpdate();
-//    if(ofGetFrameNum() == 30) goFullScreen();
     //---------------------------
     
 }
@@ -783,6 +782,13 @@ void gameOfLife::kinectDraw() {
     }
     else{
         int xCell, yCell;
+        
+        ofSetColor(0, 0, 255, alphaGray);
+        grayImage03.draw(0, 0, wfull, hfull);
+
+        ofSetColor(0, 255, 0, alphaGray);
+        grayImage02.draw(0, 0, wfull, hfull);
+        
         ofSetColor(255, 0, 0, alphaGray);
         grayImage01.draw(0, 0, wfull, hfull);
         int centroX01;
@@ -796,20 +802,22 @@ void gameOfLife::kinectDraw() {
                 yCell = centroY01 * rows / hfull;
                 //ofCircle(centroX01, centroY01, 30); // Centroid draw
                 if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
-                    //patterns::blinker01(grid, xCell, yCell);
+                    if(cellDirection > 4) cellDirection = 0; else cellDirection++;//cellDirectionで生成するグライダーの方向を場合分け
                     switch (cellDirection) {
                         case 0:
-                            patterns::glider01(grid, xCell, yCell);
+                            patterns::glider01(grid, xCell, yCell); // south east
                             break;
                         case 1:
-                            patterns::glider03(grid, xCell, yCell);
+                            patterns::glider03(grid, xCell, yCell); // south west
                             break;
                         case 2:
-                            patterns::glider02(grid, xCell, yCell);
+                            patterns::glider02(grid, xCell, yCell); // north east
                             break;
                         case 3:
-                            patterns::blinker01(grid, xCell, yCell);
-                            //patterns::glider04(grid, xCell, yCell);
+                            patterns::glider04(grid, xCell, yCell); // north west
+                            break;
+                        case 4:
+                            patterns::blinker01(grid, xCell, yCell); // blinker
                             break;
                         default:
                             break;
@@ -819,17 +827,12 @@ void gameOfLife::kinectDraw() {
             }
           }
         }
-        ofSetColor(0, 255, 0, alphaGray);
-        grayImage02.draw(0, 0, wfull, hfull);
 
-      
-        ofSetColor(0, 0, 255, alphaGray);
-        grayImage03.draw(0, 0, wfull, hfull);
-      
         if( getInfo > 0 ){
             stringstream reportScreen;
             reportScreen << "wfull=" << wfull << ",hfull=" << hfull << ", cols=" << cols << ",rows=" << rows << endl
-//            << "fullScreenRatio=" << fullScreenRatio << ", centroX02=" << centroX02 << ",centroY02=" << centroY02 << endl
+            << "fullScreenRatio=" << fullScreenRatio << endl
+            // << ", centroX02=" << centroX02 << ",centroY02=" << centroY02 << endl
             << "xCell=" << xCell << ",yCell=" << yCell << endl
             << "depth_min=" << depth_min << ", frame number=" << ofGetFrameNum() << endl
             << endl;
