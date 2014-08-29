@@ -16,9 +16,9 @@ const int HEIGHT = 600;
 //const int WIDTH = 1024;
 //const int HEIGHT = 728;
 const int CELLSIZE = 6;
-const int FULLSCREEN_CELLSIZE = 8;
-const int TICK_INTERVAL = 6;
-const int FRAMERATE = 55;
+const int FULLSCREEN_CELLSIZE = 12;
+const int TICK_INTERVAL = 3;
+const int FRAMERATE = 30;
 
 ///////////////////////////////////
 // いくつかのグローバル変数//
@@ -52,7 +52,7 @@ int hfull = 600;
 int depth_min = 220;
 //int depth_min = 150;
 int alphaGray = 50;
-int alphaSpring = 50;
+int alphaSpring = 100;
 int getInfo = -1;
 int cellDirection = 0;
 int nCentroid = 3;
@@ -178,16 +178,33 @@ void gameOfLife::tick() {
             thisCell->activeNeighbors = getNumActiveNeighbors(i, j);
             bool currState = thisCell->currState;
             int activeNeighbors = thisCell->activeNeighbors;
-            if (currState == true && activeNeighbors < 2) {
-                thisCell->nextState = false;
-            } else if (currState == true && activeNeighbors > 3) {
-                thisCell->nextState = false;
-            } else if (currState == true && activeNeighbors > 1 && activeNeighbors < 4) {
-                thisCell->nextState = true;
-                thisCell->color = ofColor::white;
-            } else if (currState == false && activeNeighbors == 3) {
-                thisCell->nextState = true;
-                thisCell->color = highlight ? ofColor::green : ofColor::white;
+            if (ofRandom(100) > 0){
+                // traditonal life game
+                if (currState == true && activeNeighbors < 2) {
+                    thisCell->nextState = false;
+                } else if (currState == true && activeNeighbors > 3) {
+                    thisCell->nextState = false;
+                } else if (currState == true && activeNeighbors > 1 && activeNeighbors < 4) {
+                    thisCell->nextState = true;
+                    thisCell->color = ofColor::white;
+                } else if (currState == false && activeNeighbors == 3) {
+                    thisCell->nextState = true;
+                    thisCell->color = highlight ? ofColor::green : ofColor::white;
+                }
+            }
+            else{
+                // Death rule 1
+                if (currState == true && activeNeighbors < 3) {
+                    thisCell->nextState = false;
+                } else if (currState == true && activeNeighbors > 3) {
+                    thisCell->nextState = false;
+                } else if (currState == true && activeNeighbors > 1 && activeNeighbors < 4) {
+                    thisCell->nextState = true;
+                    thisCell->color = ofColor::white;
+                } else if (currState == false && activeNeighbors == 3) {
+                    thisCell->nextState = true;
+                    thisCell->color = highlight ? ofColor::green : ofColor::white;
+                }
             }
         }
 	}
@@ -362,7 +379,7 @@ void gameOfLife::audioSetup() {
 
 void gameOfLife::audioRequested(float *output, int bufferSize, int nChannels) {
   float currentTone[polyNum];
-  float currentAdditiveTone[polyNum];
+//  float currentAdditiveTone[polyNum];
   float currentTempFilterNum;
   int currentX[polyNum]; // 発音数に応じて得れる要素数を制限する
   int currentY[polyNum]; // 発音数に応じて得れる要素数を制限する
@@ -384,8 +401,8 @@ void gameOfLife::audioRequested(float *output, int bufferSize, int nChannels) {
             
             currentTone[(k * l) + l] = career;
             // ちょっと後で原因究明したいが、いったん変な値を汚く間引く
-            currentX[(k * l) + l] = datas[k].x[l] > 0 && datas[k].x[l] < 2000 ? datas[k].x[l] : 0;
-            currentY[(k * l) + l] = datas[k].y[l] > 0 && datas[k].y[l] < 2000 ? datas[k].y[l] : 0;
+            currentX[(k * l) + l] = datas[k].x[l] > 0.0 && datas[k].x[l] < 2000 ? datas[k].x[l] : 0.0;
+            currentY[(k * l) + l] = datas[k].y[l] > 0.0 && datas[k].y[l] < 2000 ? datas[k].y[l] : 0.0;
           }
         }
       }
@@ -395,32 +412,32 @@ void gameOfLife::audioRequested(float *output, int bufferSize, int nChannels) {
       audioTick = false;
     }
     
-    if (addOscCOunter % 70 == 69) {
-      for (int i = 0; i < polyNum; i ++ ) {
-        currentAdditiveTone[i] = currentTone[i] ;
-        currentTempFilterNum = currentY[0];
-      }
-      addOscCOunter = 0;
-    }
+//    if (addOscCOunter % 70 == 69) {
+//      for (int i = 0; i < polyNum; i ++ ) {
+//        currentAdditiveTone[i] = currentTone[i] ;
+//        currentTempFilterNum = currentY[0];
+//      }
+//      addOscCOunter = 0;
+//    }
     
     for(int m = 0; m < polyNum; m ++ ) {
       ADSRout = ADSR[m].line(6, adsrEnv);
       
-      if (currentAdditiveTone[m] != 0) {
-        wave2 += addOsc[m].saw(currentAdditiveTone[m]) * 0.05;
-      }
+//      if (currentAdditiveTone[m] != 0) {
+//        wave2 += addOsc[m].sinewave(currentAdditiveTone[m]) * 0.05;
+//      }
       
       if (currentTone[m] != 0) {
         wave += vcFilter[m].lores(oscbank[m].sawn(currentTone[m]), (currentY[m] + 10) * 100, currentY[m] + 1 );
-        mymix.stereo(wave * ADSRout, outputs, ( 1 / ((float)(currentX[m]) ) / (float)(ofGetWidth())) );
+        mymix.stereo(wave * ADSRout, outputs, ( 1.0 - (float)(currentX[m]) / (float)(cellWidth)) );
       }
     }
     
-    wave2 *= 0.1;
-    mymixAdd.stereo(vcAddFilter.lores(wave2, (currentTempFilterNum + 10) * 100, 10), addoutputs, 0.5);
+//    wave2 *= 0.1;
+//    mymixAdd.stereo(vcAddFilter.lores(wave2, (currentTempFilterNum + 10) * 100, 10), addoutputs, 0.5);
     
-    lAudio[i] = output[i * nChannels] =  addoutputs[0] + outputs[0];
-    rAudio[i] = output[i * nChannels + 1] = addoutputs[1] + outputs[1] ;
+    lAudio[i] = output[i * nChannels] = outputs[0];
+    rAudio[i] = output[i * nChannels + 1] = outputs[1];
   }
 }
 
@@ -483,8 +500,8 @@ void gameOfLife::goFullScreen() {
     ofToggleFullscreen();
     fullScreen = !fullScreen;
     if (fullScreen) {
-        wfull = ofGetScreenWidth() * fullScreenRatio;
-        hfull = ofGetScreenHeight() * fullScreenRatio;
+        wfull = ofGetScreenWidth();
+        hfull = ofGetScreenHeight();
         init(wfull, hfull, FULLSCREEN_CELLSIZE);
 
     } else {
@@ -546,10 +563,12 @@ void gameOfLife::keyPressed(int key) {
             //-------------------------
             // for kinect by kuha
         case '1':
+            patterns::glider01(grid, 20, 20); // south east
             break;
         case '2':
             break;
         case 'b':
+            patterns::blinker01(grid, 10, 10); // blinker
             break;
         case 'D': // 0:far -> 255:near
             depth_min = min(depth_min + 1, 255);
@@ -800,7 +819,8 @@ void gameOfLife::kinectDraw() {
             if(centroX01 > 0 && centroX01 < wfull && centroY01 > 0 && centroY01 < hfull){
                 xCell = centroX01 * cols / wfull;
                 yCell = centroY01 * rows / hfull;
-                //ofCircle(centroX01, centroY01, 30); // Centroid draw
+                ofSetColor(0, 255, 255, alphaSpring);
+                ofCircle(centroX01, centroY01, 30); // Centroid draw
                 if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
                     if(cellDirection > 4) cellDirection = 0; else cellDirection++;//cellDirectionで生成するグライダーの方向を場合分け
                     switch (cellDirection) {

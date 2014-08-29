@@ -114,7 +114,7 @@ public:
   ofxMaxiMix mymix;
   ofxMaxiMix mymixAdd;
   ofxMaxiOsc osc;
-  double adsrEnv[6]={0, 10, 0.005, 10, 0, 20};
+  double adsrEnv[6]={0, 10, 0.0015, 10, 0, 20};
   double adsrAddEnv[6]={0, 100, 0.01, 2900, 0, 20};
   //  vector <ofxMaxiOsc> oscbank;
   vector <float> lAudio;
