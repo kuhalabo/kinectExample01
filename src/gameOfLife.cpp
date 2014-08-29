@@ -175,16 +175,122 @@ void gameOfLife::update() {
 void gameOfLife::tick() {
 	// get active neighbors for each cell
 
-    //if (ofGetFrameNum() % ( TICK_INTERVAL * 80 ) == 0 && active) rnd = ofRandom(100);
-    rnd = 99;
+    if (ofGetFrameNum() % ( TICK_INTERVAL * 40 ) == 0 && active) rnd = ofRandom(100);
+    //rnd = 99;
 
+    // traditonal life game
 	for (int i=0; i<cols; i++) {
         for (int j=0; j<rows; j++) {
             cell *thisCell = &grid[i][j];
             thisCell->activeNeighbors = getNumActiveNeighbors(i, j);
             bool currState = thisCell->currState;
             int activeNeighbors = thisCell->activeNeighbors;
-            if (rnd > 20){
+            
+            if (rnd > 25){
+                if (currState == true ){ // when this cell is alive
+                    switch (activeNeighbors) {
+                        case 0:case 1:
+                            thisCell->nextState = false;
+                            break;
+                        case 2:case 3:
+                            thisCell->nextState = true;
+                            thisCell->color = ofColor::white;
+                            break;
+                        case 4:case 5:case 6:case 7:case 8:
+                            thisCell->nextState = false;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else { // when this cell is dead
+                    switch (activeNeighbors) {
+                        case 0:case 1:case 2:
+                            thisCell->nextState = false;
+                            break;
+                        case 3:
+                            thisCell->nextState = true;
+                            thisCell->color = highlight ? ofColor::green : ofColor::white;
+                            break;
+                        case 4:case 5:case 6:case 7:case 8:
+                            thisCell->nextState = false;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            else if (rnd > 12){ // High denticy population
+                if (currState == true ){ // when this cell is alive
+                    switch (activeNeighbors) {
+                        case 0:case 1:
+                            thisCell->nextState = false;
+                            break;
+                        case 2:case 3:case 4:case 5:
+                            thisCell->nextState = true;
+                            thisCell->color = ofColor::white;
+                            break;
+                        case 6:case 7:case 8:
+                            thisCell->nextState = false;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else { // when this cell is dead
+                    switch (activeNeighbors) {
+                        case 0:case 1:case 2:
+                            thisCell->nextState = false;
+                            break;
+                        case 3:case 4:
+                            thisCell->nextState = true;
+                            thisCell->color = highlight ? ofColor::green : ofColor::white;
+                            break;
+                        case 5:case 6:case 7:case 8:
+                            thisCell->nextState = false;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            else { // Low denticy population
+                if (currState == true ){ // when this cell is alive
+                    switch (activeNeighbors) {
+                        case 0:
+                            thisCell->nextState = false;
+                            break;
+                        case 1:case 2:
+                            thisCell->nextState = true;
+                            thisCell->color = ofColor::white;
+                            break;
+                        case 3:case 4:case 5:case 6:case 7:case 8:
+                            thisCell->nextState = false;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else { // when this cell is dead
+                    switch (activeNeighbors) {
+                        case 0:case 1:case 2:
+                            thisCell->nextState = false;
+                            break;
+                        case 3:
+                            thisCell->nextState = true;
+                            thisCell->color = highlight ? ofColor::green : ofColor::white;
+                            break;
+                        case 4:case 5:case 6:case 7:case 8:
+                            thisCell->nextState = false;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            
+/*
+            if (rnd > 50){
                 // traditonal life game
                 if (currState == true && activeNeighbors < 2) {
                     thisCell->nextState = false;
@@ -198,7 +304,7 @@ void gameOfLife::tick() {
                     thisCell->color = highlight ? ofColor::green : ofColor::white;
                 }
             }
-            else if (rnd > 12){
+            else if (rnd > 30){
                 // Death rule 1
                 if (currState == true && activeNeighbors < 1) {
                     thisCell->nextState = false;
@@ -214,11 +320,11 @@ void gameOfLife::tick() {
             }
             else {
                 // Repro rule 1
-                if (currState == true && activeNeighbors < 3) {
+                if (currState == true && activeNeighbors < 1) {
                     thisCell->nextState = false;
                 } else if (currState == true && activeNeighbors > 4) {
                     thisCell->nextState = false;
-                } else if (currState == true && activeNeighbors > 2 && activeNeighbors < 5) {
+                } else if (currState == true && activeNeighbors > 0 && activeNeighbors < 5) {
                     thisCell->nextState = true;
                     thisCell->color = ofColor::white;
                 } else if (currState == false && activeNeighbors == 3) {
@@ -226,6 +332,8 @@ void gameOfLife::tick() {
                     thisCell->color = highlight ? ofColor::green : ofColor::white;
                 }
             }
+ */
+            
         }
 	}
 	makeNextStateCurrent();
@@ -333,16 +441,21 @@ void gameOfLife::clear() {
  *****************************/
 void gameOfLife::patternMapping() {
   int grid1x7[] = {1, 7};
+  int grid3x7[] = {3, 7};
   int grid3x3[] = {3, 3};
   int grid3x4[] = {3, 4};
   int grid4x3[] = {4, 3};
   int grid2x2[] = {2, 2};
   int grid4x4[] = {4, 4};
+  int grid5x5[] = {5, 5};
   
   
-  int pat1[] = {0, 0, 0, 1, 1, 1, 0, 0, 0};
-  int pat2[] = {0, 1, 0, 0, 1, 0, 0, 1, 0};
-  int pat3[] = {0, 1, 1, 1, 1, 1, 0};
+  //int pat1[] = {0, 0, 0, 1, 1, 1, 0, 0, 0};
+  int pat1[] = {0,0,0,0, 0,1,1,1,0, 0,0,0,0};
+  //int pat2[] = {0, 1, 0, 0, 1, 0, 0, 1, 0};
+  int pat2[] = {0,0,0, 0,1,0, 0,1,0, 0,1,0, 0,0,0};
+  int pat3[] = {0,1,1,1,1,1,0};
+  //int pat3[] = {0,0,0,0,0,0,0, 0,1,1,1,1,1,0, 0,0,0,0,0,0,0};
   
   int patDeath1[] = {0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0};
   int patDeath2[] = {0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0};
@@ -353,8 +466,10 @@ void gameOfLife::patternMapping() {
   int patGlider3[] = {1, 0, 0, 0, 1, 1, 1, 1, 0};
   int patGlider4[] = {0, 0, 1, 1, 1, 0, 0, 1, 1};
   
-  blink1 = new patternDetect("blink1", grid3x3, pat1, ofColor::cyan);
-  blink2 = new patternDetect("blink2", grid3x3, pat2, ofColor::violet);
+  //blink1 = new patternDetect("blink1", grid3x3, pat1, ofColor::cyan);
+  blink1 = new patternDetect("blink1", grid3x4, pat1, ofColor::cyan);
+  //blink2 = new patternDetect("blink2", grid3x3, pat2, ofColor::violet);
+  blink2 = new patternDetect("blink2", grid4x3, pat2, ofColor::violet);
   glider1 = new patternDetect("glider1", grid3x3, patGlider1, ofColor::greenYellow);
   glider2 = new patternDetect("glider2", grid3x3, patGlider2, ofColor::greenYellow);
   glider3 = new patternDetect("glider3", grid3x3, patGlider3, ofColor::green);
