@@ -18,7 +18,7 @@ const int HEIGHT = 600;
 const int CELLSIZE = 6;
 const int FULLSCREEN_CELLSIZE = 12;
 const int TICK_INTERVAL = 3;
-const int FRAMERATE = 30;
+const int FRAMERATE = 26;
 
 ///////////////////////////////////
 // いくつかのグローバル変数//
@@ -238,7 +238,7 @@ void gameOfLife::draw() {
 				//ofSetColor(thisCell.color.r, thisCell.color.g, thisCell.color.b, 30); // dark cell
 				ofSetColor(thisCell.color.r, thisCell.color.g, thisCell.color.b, 130); // bright cell
 				ofFill();
-                myImage.ofImage_::draw((float)(i*cellWidth), (float)(j*cellHeight), cellWidth*2.3, cellHeight*2.3);
+                myImage.ofImage_::draw((float)(i*cellWidth), (float)(j*cellHeight), cellWidth * 1.2, cellHeight * 1.2);
 //                ofRect(i*cellWidth, j*cellHeight, cellWidth, cellHeight);
 				ofNoFill();
 			}
@@ -274,7 +274,7 @@ void gameOfLife::drawingResPatterns(vector<resPattern> &datas) {
               //              cout << resData->mPattern.name << endl;
               ofSetColor(resData->mPattern.color.r, resData->mPattern.color.g, resData->mPattern.color.b, 200);
               ofFill();
-              myImage.ofImage_::draw((float)((i + resData->x.at(h)) * cellWidth) - cellWidth / 2, (float)((j + resData->y.at(h)) * cellHeight) - cellHeight / 2, cellWidth*3.0, cellHeight*3.0);
+              myImage.ofImage_::draw((float)((i + resData->x.at(h)) * cellWidth) - cellWidth, (float)((j + resData->y.at(h)) * cellHeight) - cellHeight, cellWidth*3.0, cellHeight*3.0);
               //              ofRect( (i + resData->x.at(h)) * cellWidth, (j + resData->y.at(h)) * cellHeight, cellWidth, cellHeight);
               //              ofNoFill();
             }
@@ -334,16 +334,16 @@ void gameOfLife::patternMapping() {
   int patGlider4[] = {0, 0, 1, 1, 1, 0, 0, 1, 1};
   
   blink1 = new patternDetect("blink1", grid3x3, pat1, ofColor::cyan);
-  blink2 = new patternDetect("blink2", grid3x3, pat2, ofColor::cyan);
-  glider1 = new patternDetect("glider1", grid3x3, patGlider1, ofColor::cyan);
-  glider2 = new patternDetect("glider2", grid3x3, patGlider2, ofColor::cyan);
-  glider3 = new patternDetect("glider3", grid3x3, patGlider3, ofColor::cyan);
-  glider4 = new patternDetect("glider4", grid3x3, patGlider4, ofColor::cyan);
-  line5 = new patternDetect("line5", grid1x7, pat3, ofColor::cyan);
+  blink2 = new patternDetect("blink2", grid3x3, pat2, ofColor::violet);
+  glider1 = new patternDetect("glider1", grid3x3, patGlider1, ofColor::greenYellow);
+  glider2 = new patternDetect("glider2", grid3x3, patGlider2, ofColor::greenYellow);
+  glider3 = new patternDetect("glider3", grid3x3, patGlider3, ofColor::green);
+  glider4 = new patternDetect("glider4", grid3x3, patGlider4, ofColor::green);
+  line5 = new patternDetect("line5", grid1x7, pat3, ofColor::purple);
   
-  death1 = new patternDetect("death1", grid4x3, patDeath1, ofColor::blue);
-  death2 = new patternDetect("death2", grid3x4, patDeath2, ofColor::blue);
-  deathRect = new patternDetect("deathRect", grid4x4, pathDeathRect, ofColor::blue);
+  death1 = new patternDetect("death1", grid4x3, patDeath1, ofColor::darkOliveGreen);
+  death2 = new patternDetect("death2", grid3x4, patDeath2, ofColor::darkOliveGreen);
+  deathRect = new patternDetect("deathRect", grid4x4, pathDeathRect, ofColor::darkBlue);
 }
 
 
@@ -802,13 +802,13 @@ void gameOfLife::kinectDraw() {
     else{
         int xCell, yCell;
         
-        ofSetColor(0, 0, 255, alphaGray);
+        ofSetColor(ofColor::darkBlue, 48);
         grayImage03.draw(0, 0, wfull, hfull);
 
-        ofSetColor(0, 255, 0, alphaGray);
+        ofSetColor(ofColor::darkBlue, 70);
         grayImage02.draw(0, 0, wfull, hfull);
         
-        ofSetColor(255, 0, 0, alphaGray);
+        ofSetColor(ofColor::blueSteel, 100);
         grayImage01.draw(0, 0, wfull, hfull);
         int centroX01;
         int centroY01;
@@ -817,10 +817,11 @@ void gameOfLife::kinectDraw() {
             centroX01 = contourFinder01.blobs[i].centroid.x * wfull / WIDTH * fullScreenRatio;
             centroY01 = contourFinder01.blobs[i].centroid.y * hfull / HEIGHT * fullScreenRatio;
             if(centroX01 > 0 && centroX01 < wfull && centroY01 > 0 && centroY01 < hfull){
-                xCell = centroX01 * cols / wfull;
-                yCell = centroY01 * rows / hfull;
-                ofSetColor(0, 255, 255, alphaSpring);
-                ofCircle(centroX01, centroY01, 30); // Centroid draw
+              xCell = centroX01 * cols / wfull;
+              yCell = centroY01 * rows / hfull;
+              ofSetColor(ofColor::orange, alphaSpring);
+              
+              ofCircle(centroX01, centroY01, 30); // Centroid draw
                 if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
                     if(cellDirection > 4) cellDirection = 0; else cellDirection++;//cellDirectionで生成するグライダーの方向を場合分け
                     switch (cellDirection) {
