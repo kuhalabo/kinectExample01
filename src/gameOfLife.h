@@ -70,8 +70,8 @@ public:
 	
     //    ofxKinect kinect; //Kinect instance
 	ofImage kinectImage; // Kinect camera image
-    ofImage depthImage; // Kinect depth image
-    ofImage threshImage;
+  ofImage depthImage; // Kinect depth image
+  ofImage threshImage;
 	ofxKinect kinect;
 	ofxCvColorImage colorImg;
 	
@@ -86,9 +86,10 @@ public:
 	ofxCvContourFinder contourFinder02;
 	ofxCvContourFinder contourFinder03;
     
-    void kinectSetup();
-    void kinectUpdate();
-    void kinectDraw();
+  void kinectSetup();
+  void kinectUpdate();
+  void kinectDraw();
+  void kinektDrawPointCloud();
 //--------------------------
 	
 	bool bThreshWithOpenCV;
