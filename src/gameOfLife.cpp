@@ -171,6 +171,24 @@ void gameOfLife::update() {
 
 void gameOfLife::tick() {
 	// get active neighbors for each cell
+    int rnd = 100;
+    if (ofGetFrameNum() % ( TICK_INTERVAL * 100 ) == 0 && active) rnd = ofRandom(100);
+    //rnd = 99;
+    transRule(rnd);
+    
+	makeNextStateCurrent();
+}
+
+void gameOfLife::transRule(int rnd) {
+    // normal life game rule
+    int ActiveCell[] = { 0, 0, 1, 1, 0, 0, 0, 0, 0};
+    int DeadCell[]   = { 0, 0, 0, 1, 0, 0, 0, 0, 0};
+    if (rnd < 0 ){
+        int a = (int)ofRandom(10);
+        int d = (int)ofRandom(3) + 1;
+        ActiveCell[ a ] = 1 - ActiveCell[ a ];
+        DeadCell[ d ] = 1 - DeadCell[ d ];
+    }
     
 	for (int i=0; i<cols; i++) {
         for (int j=0; j<rows; j++) {
@@ -178,37 +196,27 @@ void gameOfLife::tick() {
             thisCell->activeNeighbors = getNumActiveNeighbors(i, j);
             bool currState = thisCell->currState;
             int activeNeighbors = thisCell->activeNeighbors;
-            if (ofRandom(100) > 0){
-                // traditonal life game
-                if (currState == true && activeNeighbors < 2) {
-                    thisCell->nextState = false;
-                } else if (currState == true && activeNeighbors > 3) {
-                    thisCell->nextState = false;
-                } else if (currState == true && activeNeighbors > 1 && activeNeighbors < 4) {
+            
+            if (currState == true ){ // when this cell is alive
+                if( ActiveCell[activeNeighbors] == 1){
                     thisCell->nextState = true;
                     thisCell->color = ofColor::white;
-                } else if (currState == false && activeNeighbors == 3) {
-                    thisCell->nextState = true;
-                    thisCell->color = highlight ? ofColor::green : ofColor::white;
+                }
+                else{
+                    thisCell->nextState = false;
                 }
             }
             else{
-                // Death rule 1
-                if (currState == true && activeNeighbors < 3) {
-                    thisCell->nextState = false;
-                } else if (currState == true && activeNeighbors > 3) {
-                    thisCell->nextState = false;
-                } else if (currState == true && activeNeighbors > 1 && activeNeighbors < 4) {
-                    thisCell->nextState = true;
-                    thisCell->color = ofColor::white;
-                } else if (currState == false && activeNeighbors == 3) {
+                if( DeadCell[activeNeighbors] == 1){
                     thisCell->nextState = true;
                     thisCell->color = highlight ? ofColor::green : ofColor::white;
+                }
+                else{
+                    thisCell->nextState = false;
                 }
             }
         }
 	}
-	makeNextStateCurrent();
 }
 
 void gameOfLife::makeNextStateCurrent() {

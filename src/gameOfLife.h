@@ -64,6 +64,11 @@ public:
     
     bool active;
 
+    //--------------------------
+    // add by kuhara for trandition rule of life game update cell
+    void transRule(int rnd);
+    //------------
+
 //--------------------------
 // kinect setting
 //    void windowResized(int w, int h);
