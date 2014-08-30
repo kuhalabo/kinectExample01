@@ -26,7 +26,6 @@ struct cell {
 	ofColor color;
 };
 
-
 struct matchPattern {
   string name;
   ofColor color;
@@ -89,7 +88,6 @@ public:
     void kinectSetup();
     void kinectUpdate();
     void kinectDraw();
-//--------------------------
 	
 	bool bThreshWithOpenCV;
 	
@@ -98,7 +96,11 @@ public:
 	int angle;
     
 //--------------------------
-  
+// add by kuhara for trandition rule of life game update cell
+//    int acell[9]; //current active cell live or dead by neighor number
+//    int dcell[9]; //current dead cell born by neighbor nunber
+    void transRule(int rnd);
+//------------
   
   /************************/
   // ofxMaximまわり変数宣言 //
@@ -138,7 +140,6 @@ private:
     
     int getNumActiveNeighbors(int colIndex, int rowIndex);
     int currState(int colIndex, int rowIndex);
-    
     
     void makeNextStateCurrent();
     void goFullScreen();

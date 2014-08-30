@@ -58,6 +58,10 @@ int getInfo = -1;
 int cellDirection = 0;
 int nCentroid = 5; // セル生成場所の重心の検出個数
 int angle0 = 0; // kinect angle
+//
+// normal life game rule
+int ActiveCell[] = { 0, 0, 1, 1, 0, 0, 0, 0, 0};
+int DeadCell[]   = { 0, 0, 0, 1, 0, 0, 0, 0, 0};
 int rnd; // random number 0 to 99
 //------------------------
 
@@ -145,197 +149,13 @@ void gameOfLife::update() {
     
 }
 
-/*今は参照渡し風に書いている　複数のインスタンスを渡してバグが生まれたら対応*/
-/*
- void gameOfLife::oscSending(vector<resPattern> &datas) {
- for(resData = datas.begin(); resData != datas.end(); ++resData) {
- std::stringstream result_x, result_y;
- std::copy(&*resData->x.begin(), &*resData->x.end(), std::ostream_iterator<int>(result_x, ","));
- std::copy(&*resData->y.begin(), &*resData->y.end(), std::ostream_iterator<int>(result_y, ","));
- ofxOscMessage mx, my;
- string textName = "/";
- textName += resData->patternName;
- textName += "/";
- string textX = textName + "x";
- string textY = textName + "y";
- 
- mx.setAddress(textX);
- mx.addStringArg( result_x.str() );
- 
- my.setAddress( textY );
- my.addStringArg( result_y.str() );
- 
- //メッセージを送信
- sender.sendMessage( mx );
- sender.sendMessage( my );
- };
- }
- */
-
 void gameOfLife::tick() {
 	// get active neighbors for each cell
 
-    if (ofGetFrameNum() % ( TICK_INTERVAL * 40 ) == 0 && active) rnd = ofRandom(100);
+    if (ofGetFrameNum() % ( TICK_INTERVAL * 100 ) == 0 && active) rnd = ofRandom(100);
     //rnd = 99;
-
-    // traditonal life game
-	for (int i=0; i<cols; i++) {
-        for (int j=0; j<rows; j++) {
-            cell *thisCell = &grid[i][j];
-            thisCell->activeNeighbors = getNumActiveNeighbors(i, j);
-            bool currState = thisCell->currState;
-            int activeNeighbors = thisCell->activeNeighbors;
-            
-            if (rnd > 25){
-                if (currState == true ){ // when this cell is alive
-                    switch (activeNeighbors) {
-                        case 0:case 1:
-                            thisCell->nextState = false;
-                            break;
-                        case 2:case 3:
-                            thisCell->nextState = true;
-                            thisCell->color = ofColor::white;
-                            break;
-                        case 4:case 5:case 6:case 7:case 8:
-                            thisCell->nextState = false;
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else { // when this cell is dead
-                    switch (activeNeighbors) {
-                        case 0:case 1:case 2:
-                            thisCell->nextState = false;
-                            break;
-                        case 3:
-                            thisCell->nextState = true;
-                            thisCell->color = highlight ? ofColor::green : ofColor::white;
-                            break;
-                        case 4:case 5:case 6:case 7:case 8:
-                            thisCell->nextState = false;
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-            else if (rnd > 12){ // High denticy population
-                if (currState == true ){ // when this cell is alive
-                    switch (activeNeighbors) {
-                        case 0:case 1:
-                            thisCell->nextState = false;
-                            break;
-                        case 2:case 3:case 4:case 5:
-                            thisCell->nextState = true;
-                            thisCell->color = ofColor::white;
-                            break;
-                        case 6:case 7:case 8:
-                            thisCell->nextState = false;
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else { // when this cell is dead
-                    switch (activeNeighbors) {
-                        case 0:case 1:case 2:
-                            thisCell->nextState = false;
-                            break;
-                        case 3:case 4:
-                            thisCell->nextState = true;
-                            thisCell->color = highlight ? ofColor::green : ofColor::white;
-                            break;
-                        case 5:case 6:case 7:case 8:
-                            thisCell->nextState = false;
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-            else { // Low denticy population
-                if (currState == true ){ // when this cell is alive
-                    switch (activeNeighbors) {
-                        case 0:
-                            thisCell->nextState = false;
-                            break;
-                        case 1:case 2:
-                            thisCell->nextState = true;
-                            thisCell->color = ofColor::white;
-                            break;
-                        case 3:case 4:case 5:case 6:case 7:case 8:
-                            thisCell->nextState = false;
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else { // when this cell is dead
-                    switch (activeNeighbors) {
-                        case 0:case 1:case 2:
-                            thisCell->nextState = false;
-                            break;
-                        case 3:
-                            thisCell->nextState = true;
-                            thisCell->color = highlight ? ofColor::green : ofColor::white;
-                            break;
-                        case 4:case 5:case 6:case 7:case 8:
-                            thisCell->nextState = false;
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-            
-/*
-            if (rnd > 50){
-                // traditonal life game
-                if (currState == true && activeNeighbors < 2) {
-                    thisCell->nextState = false;
-                } else if (currState == true && activeNeighbors > 3) {
-                    thisCell->nextState = false;
-                } else if (currState == true && activeNeighbors > 1 && activeNeighbors < 4) {
-                    thisCell->nextState = true;
-                    thisCell->color = ofColor::white;
-                } else if (currState == false && activeNeighbors == 3) {
-                    thisCell->nextState = true;
-                    thisCell->color = highlight ? ofColor::green : ofColor::white;
-                }
-            }
-            else if (rnd > 30){
-                // Death rule 1
-                if (currState == true && activeNeighbors < 1) {
-                    thisCell->nextState = false;
-                } else if (currState == true && activeNeighbors > 2) {
-                    thisCell->nextState = false;
-                } else if (currState == true && activeNeighbors > 0 && activeNeighbors < 3) {
-                    thisCell->nextState = true;
-                    thisCell->color = ofColor::white;
-                } else if (currState == false && activeNeighbors == 3) {
-                    thisCell->nextState = true;
-                    thisCell->color = highlight ? ofColor::green : ofColor::white;
-                }
-            }
-            else {
-                // Repro rule 1
-                if (currState == true && activeNeighbors < 1) {
-                    thisCell->nextState = false;
-                } else if (currState == true && activeNeighbors > 4) {
-                    thisCell->nextState = false;
-                } else if (currState == true && activeNeighbors > 0 && activeNeighbors < 5) {
-                    thisCell->nextState = true;
-                    thisCell->color = ofColor::white;
-                } else if (currState == false && activeNeighbors == 3) {
-                    thisCell->nextState = true;
-                    thisCell->color = highlight ? ofColor::green : ofColor::white;
-                }
-            }
- */
-            
-        }
-	}
+    
+    transRule(rnd);
 	makeNextStateCurrent();
 }
 
@@ -346,6 +166,45 @@ void gameOfLife::makeNextStateCurrent() {
 		}
 	}
 }
+
+void gameOfLife::transRule(int rnd) {
+    if (rnd < 10 ){
+        int a = (int)ofRandom(10);
+        int d = (int)ofRandom(3) + 1;
+        ActiveCell[ a ] = 1 - ActiveCell[ a ];
+        DeadCell[ d ] = 1 - DeadCell[ d ];
+    }
+    
+	for (int i=0; i<cols; i++) {
+        for (int j=0; j<rows; j++) {
+            cell *thisCell = &grid[i][j];
+            thisCell->activeNeighbors = getNumActiveNeighbors(i, j);
+            bool currState = thisCell->currState;
+            int activeNeighbors = thisCell->activeNeighbors;
+            
+            if (currState == true ){ // when this cell is alive
+                if( ActiveCell[activeNeighbors] == 1){
+                    thisCell->nextState = true;
+                    thisCell->color = ofColor::white;
+                }
+                else{
+                    thisCell->nextState = false;
+                }
+            }
+            else{
+                if( DeadCell[activeNeighbors] == 1){
+                    thisCell->nextState = true;
+                    thisCell->color = highlight ? ofColor::green : ofColor::white;
+                }
+                else{
+                    thisCell->nextState = false;
+                }
+            }
+        }
+	}
+
+}
+
 
 void gameOfLife::draw() {
   //------------------------------------
