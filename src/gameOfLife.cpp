@@ -59,9 +59,6 @@ int cellDirection = 0;
 int nCentroid = 5; // セル生成場所の重心の検出個数
 int angle0 = 0; // kinect angle
 //
-// normal life game rule
-int ActiveCell[] = { 0, 0, 1, 1, 0, 0, 0, 0, 0};
-int DeadCell[]   = { 0, 0, 0, 1, 0, 0, 0, 0, 0};
 int rnd; // random number 0 to 99
 //------------------------
 
@@ -154,8 +151,8 @@ void gameOfLife::tick() {
 
     if (ofGetFrameNum() % ( TICK_INTERVAL * 100 ) == 0 && active) rnd = ofRandom(100);
     //rnd = 99;
-    
     transRule(rnd);
+    
 	makeNextStateCurrent();
 }
 
@@ -168,7 +165,10 @@ void gameOfLife::makeNextStateCurrent() {
 }
 
 void gameOfLife::transRule(int rnd) {
-    if (rnd < 10 ){
+    // normal life game rule
+    int ActiveCell[] = { 0, 0, 1, 1, 0, 0, 0, 0, 0};
+    int DeadCell[]   = { 0, 0, 0, 1, 0, 0, 0, 0, 0};
+    if (rnd < 0 ){
         int a = (int)ofRandom(10);
         int d = (int)ofRandom(3) + 1;
         ActiveCell[ a ] = 1 - ActiveCell[ a ];
