@@ -49,13 +49,15 @@ const int SCREENRATE = 1;
 float fullScreenRatio = 1.25;
 int wfull = 800;
 int hfull = 600;
-int depth_min = 220;
+int depth_min = 200; //影を検出するデプス値の最も大きい（近い）値
 //int depth_min = 150;
-int alphaGray = 50;
-int alphaSpring = 100;
+int depth_dif = 10;//２つの影のレイヤーのテプス値の差
+int alphaGray = 50; // 人影のアルファ値
+int alphaSpring = 100;// 重心に描画する図形の陰のアルファ値
 int getInfo = -1;
 int cellDirection = 0;
-int nCentroid = 3;
+int nCentroid = 3; // セル生成場所の重心の検出個数
+int angle0 = 0; // kinect angle
 //------------------------
 
 
@@ -606,17 +608,21 @@ void gameOfLife::keyPressed(int key) {
             break;
         case 'D': // 0:far -> 255:near
             depth_min = min(depth_min + 1, 255);
-            nearThreshold01 = depth_min + 20;
-            farThreshold01 = depth_min + 10;
-            nearThreshold02 = depth_min + 10;
-            farThreshold02 = depth_min;
+            farThreshold03 = depth_min;
+            nearThreshold03 = farThreshold03 + depth_dif;
+            farThreshold02 = nearThreshold03;
+            nearThreshold02 = farThreshold02 + depth_dif;
+            farThreshold01 = nearThreshold02;
+            nearThreshold01 = farThreshold01 + depth_dif;
             break;
         case 'd':
             depth_min = max(depth_min - 1, 0);
-            nearThreshold01 = depth_min + 20;
-            farThreshold01 = depth_min + 10;
-            nearThreshold02 = depth_min + 10;
-            farThreshold02 = depth_min;
+            farThreshold03 = depth_min;
+            nearThreshold03 = farThreshold03 + depth_dif;
+            farThreshold02 = nearThreshold03;
+            nearThreshold02 = farThreshold02 + depth_dif;
+            farThreshold01 = nearThreshold02;
+            nearThreshold01 = farThreshold01 + depth_dif;
             break;
         case 'W':
             fullScreenRatio = min(fullScreenRatio + 0.01, 2.5);
@@ -667,16 +673,17 @@ void gameOfLife::kinectSetup() {
 	grayThreshNear.allocate(kinect.width, kinect.height);
 	grayThreshFar.allocate(kinect.width, kinect.height);
   
-	nearThreshold01 = depth_min + 30;
-	farThreshold01 = depth_min + 20;
-	nearThreshold02 = depth_min + 20;
-	farThreshold02 = depth_min + 10;
-	nearThreshold03 = depth_min + 10;
 	farThreshold03 = depth_min;
+	nearThreshold03 = farThreshold03 + depth_dif;
+	farThreshold02 = nearThreshold03;
+	nearThreshold02 = farThreshold02 + depth_dif;
+	farThreshold01 = nearThreshold02;
+	nearThreshold01 = farThreshold01 + depth_dif;
+
 	bThreshWithOpenCV = true;
 	
 	// zero the tilt on startup
-	angle = 0;
+	angle = angle0;
 	kinect.setCameraTiltAngle(angle);
     
 }
@@ -889,11 +896,11 @@ void gameOfLife::kinectDraw() {
             reportScreen << "wfull=" << wfull << ",hfull=" << hfull << ", cols=" << cols << ",rows=" << rows << endl
             << "fullScreenRatio=" << fullScreenRatio << endl
             // << ", centroX02=" << centroX02 << ",centroY02=" << centroY02 << endl
-            << "xCell=" << xCell << ",yCell=" << yCell << endl
-            << "depth_min=" << depth_min << ", frame number=" << ofGetFrameNum() << endl
+            << "xCell=" << xCell << ",yCell=" << yCell << ", angle=" << angle << endl
+            << "depth_min=" << depth_min << ",depth_dif=" << depth_dif << ", frame number=" << ofGetFrameNum() << endl
             << endl;
             ofSetColor(255, 255, 255);
-            ofDrawBitmapString(reportScreen.str(), 20, 100);
+            ofDrawBitmapString(reportScreen.str(), 20, 200);
         }
     }
 }
