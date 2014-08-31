@@ -58,6 +58,7 @@ int getInfo = -1;
 int cellDirection = 0;
 int nCentroid = 3; // セル生成場所の重心の検出個数
 int angle0 = 0; // kinect angle
+int rnd = 100;
 //------------------------
 
 
@@ -173,8 +174,7 @@ void gameOfLife::update() {
 
 void gameOfLife::tick() {
 	// get active neighbors for each cell
-    int rnd = 100;
-    if (ofGetFrameNum() % ( TICK_INTERVAL * 100 ) == 0 && active) rnd = ofRandom(100);
+    if (ofGetFrameNum() % ( TICK_INTERVAL * 20 ) == 0 && active) rnd = (ofGetFrameNum()) / ( TICK_INTERVAL * 20 ) % 100;
     //rnd = 99;
     transRule(rnd);
     
@@ -185,11 +185,18 @@ void gameOfLife::transRule(int rnd) {
     // normal life game rule
     int ActiveCell[] = { 0, 0, 1, 1, 0, 0, 0, 0, 0};
     int DeadCell[]   = { 0, 0, 0, 1, 0, 0, 0, 0, 0};
-    if (rnd < 0 ){
-        int a = (int)ofRandom(10);
-        int d = (int)ofRandom(3) + 1;
+
+    if ( rnd % 30 == 15 ){
+        int a = rnd % 7 + 1;
+        int d = rnd % 4 + 1;
         ActiveCell[ a ] = 1 - ActiveCell[ a ];
         DeadCell[ d ] = 1 - DeadCell[ d ];
+    }
+    if ( rnd % 30 == 25 ){
+        ActiveCell[0]=1;ActiveCell[1]=1;ActiveCell[2]=0;ActiveCell[3]=0;
+        ActiveCell[4]=0;ActiveCell[5]=0;ActiveCell[6]=0;ActiveCell[7]=0;
+        DeadCell[0]=0;DeadCell[1]=0;DeadCell[2]=0;DeadCell[3]=1;
+        DeadCell[4]=0;DeadCell[5]=0;DeadCell[6]=0;DeadCell[7]=0;
     }
     
 	for (int i=0; i<cols; i++) {
@@ -898,7 +905,7 @@ void gameOfLife::kinectDraw() {
             // << ", centroX02=" << centroX02 << ",centroY02=" << centroY02 << endl
             << "xCell=" << xCell << ",yCell=" << yCell << ", angle=" << angle << endl
             << "depth_min=" << depth_min << ",depth_dif=" << depth_dif << ", frame number=" << ofGetFrameNum() << endl
-            << endl;
+            << "rnd=" << rnd << endl;
             ofSetColor(255, 255, 255);
             ofDrawBitmapString(reportScreen.str(), 20, 200);
         }
