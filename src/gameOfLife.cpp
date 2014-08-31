@@ -354,6 +354,8 @@ void gameOfLife::patternMapping() {
 
 //  blink1 = new patternDetect("blink1", grid3x3, pat1, ofColor::cyan);
 //  blink2 = new patternDetect("blink2", grid3x3, pat2, ofColor::violet);
+//  blink1 = new patternDetect("blink1", grid3x3, pat1, ofColor::yellow);
+//  blink2 = new patternDetect("blink2", grid3x3, pat2, ofColor::lemonChiffon);
 //  glider1 = new patternDetect("glider1", grid3x3, patGlider1, ofColor::greenYellow);
 //  glider2 = new patternDetect("glider2", grid3x3, patGlider2, ofColor::greenYellow);
 //  glider3 = new patternDetect("glider3", grid3x3, patGlider3, ofColor::green);
@@ -872,7 +874,7 @@ void gameOfLife::kinectDraw() {
               ofCircle(centroX01, centroY01, 30); // Centroid draw
               
               if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
-                    if(cellDirection > 4) cellDirection = 0; else cellDirection++;//cellDirectionで生成するグライダーの方向を場合分け
+                    if(cellDirection > 5) cellDirection = 0; else cellDirection++;//cellDirectionで生成するグライダーの方向を場合分け
                     switch (cellDirection) {
                         case 0:
                             patterns::glider01(grid, xCell, yCell); // south east
@@ -888,6 +890,9 @@ void gameOfLife::kinectDraw() {
                             break;
                         case 4:
                             patterns::blinker01(grid, xCell, yCell); // blinker
+                            break;
+                        case 5:
+                            patterns::blinker02(grid, xCell, yCell); // blinker
                             break;
                         default:
                             break;
