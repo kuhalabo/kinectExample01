@@ -248,7 +248,6 @@ void gameOfLife::draw() {
 
     
     if (ofGetFrameNum() % TICK_INTERVAL == 0 && active) {
-//      kinektDrawPointCloud();
       ofEnableBlendMode(OF_BLENDMODE_ALPHA);
       
       /*パターン検出インスタンスの実行メソッド*/
@@ -891,29 +890,6 @@ void gameOfLife::kinectDraw() {
 }
 
 
-void gameOfLife::kinektDrawPointCloud() {
-//  ofBackground(0, 0, 0);
-  int step = 14;
-
-  for (int j = 0; j < kinect.height; j+=step) {
-    for (int i = 0; i < kinect.width; i+=step) {
-    	// (x,y)のz位置取得
-      float distance = kinect.getDistanceAt(i, j);
-      
-      
-    	// 欲しいz深度範囲だけ描画
-      if(distance>700 && distance<1000) {
-        // 色取得
-        ofSetColor(kinect.getColorAt(i,j));
-        
-        ofPushMatrix();
-        ofTranslate( (i-kinect.width) * 6 + 2400, (j-kinect.height) * 5 + 1500, distance*-2.0);
-        ofCircle(0, 0, int(1));
-        ofPopMatrix();
-      }
-    }
-  }
-}
 
 
 //--------------------------------------------------------------

@@ -89,7 +89,6 @@ public:
   void kinectSetup();
   void kinectUpdate();
   void kinectDraw();
-  void kinektDrawPointCloud();
 //--------------------------
 	
 	bool bThreshWithOpenCV;
