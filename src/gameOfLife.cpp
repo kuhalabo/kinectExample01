@@ -354,12 +354,11 @@ void gameOfLife::patternMapping() {
 
 //  blink1 = new patternDetect("blink1", grid3x3, pat1, ofColor::cyan);
 //  blink2 = new patternDetect("blink2", grid3x3, pat2, ofColor::violet);
-//  blink1 = new patternDetect("blink1", grid3x3, pat1, ofColor::yellow);
 //  blink2 = new patternDetect("blink2", grid3x3, pat2, ofColor::lemonChiffon);
-//  glider1 = new patternDetect("glider1", grid3x3, patGlider1, ofColor::greenYellow);
-//  glider2 = new patternDetect("glider2", grid3x3, patGlider2, ofColor::greenYellow);
-//  glider3 = new patternDetect("glider3", grid3x3, patGlider3, ofColor::green);
-//  glider4 = new patternDetect("glider4", grid3x3, patGlider4, ofColor::green);
+//    glider1 = new patternDetect("glider1", grid3x3, patGlider1, ofColor::greenYellow);
+//    glider2 = new patternDetect("glider2", grid3x3, patGlider2, ofColor::greenYellow);
+//    glider3 = new patternDetect("glider3", grid3x3, patGlider3, ofColor::green);
+//    glider4 = new patternDetect("glider4", grid3x3, patGlider4, ofColor::green);
 //  line5 = new patternDetect("line5", grid1x7, pat3, ofColor::purple);
 //  
 //  death1 = new patternDetect("death1", grid4x3, patDeath1, ofColor::darkOliveGreen);
@@ -378,17 +377,30 @@ void gameOfLife::patternMapping() {
 //  death2 = new patternDetect("death2", grid3x4, patDeath2, ofColor::white);
 //  deathRect = new patternDetect("deathRect", grid4x4, pathDeathRect, ofColor::white);
   
-  blink1 = new patternDetect("blink1", grid3x3, pat1, ofColor::white);
-  blink2 = new patternDetect("blink2", grid3x3, pat2, ofColor::white);
-  glider1 = new patternDetect("glider1", grid3x3, patGlider1, ofColor::white);
-  glider2 = new patternDetect("glider2", grid3x3, patGlider2, ofColor::white);
-  glider3 = new patternDetect("glider3", grid3x3, patGlider3, ofColor::white);
-  glider4 = new patternDetect("glider4", grid3x3, patGlider4, ofColor::white);
-  line5 = new patternDetect("line5", grid1x7, pat3, ofColor::white);
+//  blink1 = new patternDetect("blink1", grid3x3, pat1, ofColor::white);
+//  blink2 = new patternDetect("blink2", grid3x3, pat2, ofColor::white);
+//  glider1 = new patternDetect("glider1", grid3x3, patGlider1, ofColor::white);
+//  glider2 = new patternDetect("glider2", grid3x3, patGlider2, ofColor::white);
+//  glider3 = new patternDetect("glider3", grid3x3, patGlider3, ofColor::white);
+//  glider4 = new patternDetect("glider4", grid3x3, patGlider4, ofColor::white);
+//  line5 = new patternDetect("line5", grid1x7, pat3, ofColor::white);
   
-  death1 = new patternDetect("death1", grid4x3, patDeath1, ofColor::white);
-  death2 = new patternDetect("death2", grid3x4, patDeath2, ofColor::white);
-  deathRect = new patternDetect("deathRect", grid4x4, pathDeathRect, ofColor::white);
+//  death1 = new patternDetect("death1", grid4x3, patDeath1, ofColor::white);
+//  death2 = new patternDetect("death2", grid3x4, patDeath2, ofColor::white);
+//  deathRect = new patternDetect("deathRect", grid4x4, pathDeathRect, ofColor::white);
+    
+    blink1 = new patternDetect("blink1", grid3x3, pat1, ofColor::orange);
+    blink2 = new patternDetect("blink2", grid3x3, pat2, ofColor::yellow);
+    glider1 = new patternDetect("glider1", grid3x3, patGlider1, ofColor::greenYellow);
+    glider2 = new patternDetect("glider2", grid3x3, patGlider2, ofColor::greenYellow);
+    glider3 = new patternDetect("glider3", grid3x3, patGlider3, ofColor::green);
+    glider4 = new patternDetect("glider4", grid3x3, patGlider4, ofColor::green);
+    line5 = new patternDetect("line5", grid1x7, pat3, ofColor::lemonChiffon);
+
+    death1 = new patternDetect("death1", grid4x3, patDeath1, ofColor::lightCyan);
+    death2 = new patternDetect("death2", grid3x4, patDeath2, ofColor::lightCyan);
+    deathRect = new patternDetect("deathRect", grid4x4, pathDeathRect, ofColor::lightCyan);
+    
 }
 
 
