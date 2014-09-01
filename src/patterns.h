@@ -22,6 +22,7 @@ public:
     static void glider03(cell **grid, int startPosX, int startPosY);
     static void glider04(cell **grid, int startPosX, int startPosY);
     static void blinker01(cell **grid, int startPosX, int startPosY);
+    static void blinker02(cell **grid, int startPosX, int startPosY);
     //-----------------
     
 };

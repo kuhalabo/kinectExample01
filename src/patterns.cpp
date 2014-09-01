@@ -122,5 +122,11 @@ void patterns::blinker01(cell **grid, int startPosX, int startPosY) {
     grid[startPosX+2][startPosY+2].currState = true;
     grid[startPosX+2][startPosY+3].currState = true;
 }
+void patterns::blinker02(cell **grid, int startPosX, int startPosY) {
+    // left box
+    grid[startPosX+1][startPosY+2].currState = true;
+    grid[startPosX+2][startPosY+2].currState = true;
+    grid[startPosX+3][startPosY+2].currState = true;
+}
 
 

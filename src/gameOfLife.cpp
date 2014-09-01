@@ -49,13 +49,16 @@ const int SCREENRATE = 1;
 float fullScreenRatio = 1.25;
 int wfull = 800;
 int hfull = 600;
-int depth_min = 220;
+int depth_min = 200; //影を検出するデプス値の最も大きい（近い）値
 //int depth_min = 150;
-int alphaGray = 50;
-int alphaSpring = 100;
+int depth_dif = 10;//２つの影のレイヤーのテプス値の差
+int alphaGray = 50; // 人影のアルファ値
+int alphaSpring = 100;// 重心に描画する図形の陰のアルファ値
 int getInfo = -1;
 int cellDirection = 0;
-int nCentroid = 3;
+int nCentroid = 3; // セル生成場所の重心の検出個数
+int angle0 = 0; // kinect angle
+int rnd = 100;
 //------------------------
 
 
@@ -171,6 +174,30 @@ void gameOfLife::update() {
 
 void gameOfLife::tick() {
 	// get active neighbors for each cell
+    if (ofGetFrameNum() % ( TICK_INTERVAL * 20 ) == 0 && active) rnd = (ofGetFrameNum()) / ( TICK_INTERVAL * 20 ) % 100;
+    //rnd = 99;
+    transRule(rnd);
+    
+	makeNextStateCurrent();
+}
+
+void gameOfLife::transRule(int rnd) {
+    // normal life game rule
+    int ActiveCell[] = { 0, 0, 1, 1, 0, 0, 0, 0, 0};
+    int DeadCell[]   = { 0, 0, 0, 1, 0, 0, 0, 0, 0};
+
+    if ( rnd % 30 == 15 ){
+        int a = rnd % 7 + 1;
+        int d = rnd % 4 + 1;
+        ActiveCell[ a ] = 1 - ActiveCell[ a ];
+        DeadCell[ d ] = 1 - DeadCell[ d ];
+    }
+    if ( rnd % 30 == 25 ){
+        ActiveCell[0]=1;ActiveCell[1]=1;ActiveCell[2]=0;ActiveCell[3]=0;
+        ActiveCell[4]=0;ActiveCell[5]=0;ActiveCell[6]=0;ActiveCell[7]=0;
+        DeadCell[0]=0;DeadCell[1]=0;DeadCell[2]=0;DeadCell[3]=1;
+        DeadCell[4]=0;DeadCell[5]=0;DeadCell[6]=0;DeadCell[7]=0;
+    }
     
 	for (int i=0; i<cols; i++) {
         for (int j=0; j<rows; j++) {
@@ -178,37 +205,27 @@ void gameOfLife::tick() {
             thisCell->activeNeighbors = getNumActiveNeighbors(i, j);
             bool currState = thisCell->currState;
             int activeNeighbors = thisCell->activeNeighbors;
-            if (ofRandom(100) > 0){
-                // traditonal life game
-                if (currState == true && activeNeighbors < 2) {
-                    thisCell->nextState = false;
-                } else if (currState == true && activeNeighbors > 3) {
-                    thisCell->nextState = false;
-                } else if (currState == true && activeNeighbors > 1 && activeNeighbors < 4) {
+            
+            if (currState == true ){ // when this cell is alive
+                if( ActiveCell[activeNeighbors] == 1){
                     thisCell->nextState = true;
                     thisCell->color = ofColor::white;
-                } else if (currState == false && activeNeighbors == 3) {
-                    thisCell->nextState = true;
-                    thisCell->color = highlight ? ofColor::green : ofColor::white;
+                }
+                else{
+                    thisCell->nextState = false;
                 }
             }
             else{
-                // Death rule 1
-                if (currState == true && activeNeighbors < 3) {
-                    thisCell->nextState = false;
-                } else if (currState == true && activeNeighbors > 3) {
-                    thisCell->nextState = false;
-                } else if (currState == true && activeNeighbors > 1 && activeNeighbors < 4) {
-                    thisCell->nextState = true;
-                    thisCell->color = ofColor::white;
-                } else if (currState == false && activeNeighbors == 3) {
+                if( DeadCell[activeNeighbors] == 1){
                     thisCell->nextState = true;
                     thisCell->color = highlight ? ofColor::green : ofColor::white;
+                }
+                else{
+                    thisCell->nextState = false;
                 }
             }
         }
 	}
-	makeNextStateCurrent();
 }
 
 void gameOfLife::makeNextStateCurrent() {
@@ -357,6 +374,7 @@ void gameOfLife::patternMapping() {
   death1 = new patternDetect("death1", grid4x3, patDeath1, ofColor::lightGray);
   death2 = new patternDetect("death2", grid3x4, patDeath2, ofColor::lightGoldenRodYellow);
   deathRect = new patternDetect("deathRect", grid4x4, pathDeathRect, ofColor::lightGray);
+
 }
 
 
@@ -585,17 +603,21 @@ void gameOfLife::keyPressed(int key) {
             break;
         case 'D': // 0:far -> 255:near
             depth_min = min(depth_min + 1, 255);
-            nearThreshold01 = depth_min + 20;
-            farThreshold01 = depth_min + 10;
-            nearThreshold02 = depth_min + 10;
-            farThreshold02 = depth_min;
+            farThreshold03 = depth_min;
+            nearThreshold03 = farThreshold03 + depth_dif;
+            farThreshold02 = nearThreshold03;
+            nearThreshold02 = farThreshold02 + depth_dif;
+            farThreshold01 = nearThreshold02;
+            nearThreshold01 = farThreshold01 + depth_dif;
             break;
         case 'd':
             depth_min = max(depth_min - 1, 0);
-            nearThreshold01 = depth_min + 20;
-            farThreshold01 = depth_min + 10;
-            nearThreshold02 = depth_min + 10;
-            farThreshold02 = depth_min;
+            farThreshold03 = depth_min;
+            nearThreshold03 = farThreshold03 + depth_dif;
+            farThreshold02 = nearThreshold03;
+            nearThreshold02 = farThreshold02 + depth_dif;
+            farThreshold01 = nearThreshold02;
+            nearThreshold01 = farThreshold01 + depth_dif;
             break;
         case 'W':
             fullScreenRatio = min(fullScreenRatio + 0.01, 2.5);
@@ -646,16 +668,17 @@ void gameOfLife::kinectSetup() {
 	grayThreshNear.allocate(kinect.width, kinect.height);
 	grayThreshFar.allocate(kinect.width, kinect.height);
   
-	nearThreshold01 = depth_min + 30;
-	farThreshold01 = depth_min + 20;
-	nearThreshold02 = depth_min + 20;
-	farThreshold02 = depth_min + 10;
-	nearThreshold03 = depth_min + 10;
 	farThreshold03 = depth_min;
+	nearThreshold03 = farThreshold03 + depth_dif;
+	farThreshold02 = nearThreshold03;
+	nearThreshold02 = farThreshold02 + depth_dif;
+	farThreshold01 = nearThreshold02;
+	nearThreshold01 = farThreshold01 + depth_dif;
+
 	bThreshWithOpenCV = true;
 	
 	// zero the tilt on startup
-	angle = 0;
+	angle = angle0;
 	kinect.setCameraTiltAngle(angle);
     
 }
@@ -838,7 +861,7 @@ void gameOfLife::kinectDraw() {
               ofCircle(centroX01, centroY01, 30); // Centroid draw
               
               if (ofGetFrameNum() % (TICK_INTERVAL * 6) == 0 && active) {
-                    if(cellDirection > 4) cellDirection = 0; else cellDirection++;//cellDirectionで生成するグライダーの方向を場合分け
+                    if(cellDirection > 5) cellDirection = 0; else cellDirection++;//cellDirectionで生成するグライダーの方向を場合分け
                     switch (cellDirection) {
                         case 0:
                             patterns::glider01(grid, xCell, yCell); // south east
@@ -855,12 +878,18 @@ void gameOfLife::kinectDraw() {
                         case 4:
                             patterns::blinker01(grid, xCell, yCell); // blinker
                             break;
+                        case 5:
+                            patterns::blinker02(grid, xCell, yCell); // blinker
+                            break;
                         default:
                             break;
                     }
                     //patterns::blinker01(grid, xCell, yCell);
                 }
             }
+          }
+          else if( i == 1 && ofGetFrameNum() % (TICK_INTERVAL * 200) == 100 && active){
+              patterns::gliderGun(grid, 2, 2);
           }
         }
 
@@ -869,11 +898,11 @@ void gameOfLife::kinectDraw() {
             reportScreen << "wfull=" << wfull << ",hfull=" << hfull << ", cols=" << cols << ",rows=" << rows << endl
             << "fullScreenRatio=" << fullScreenRatio << endl
             // << ", centroX02=" << centroX02 << ",centroY02=" << centroY02 << endl
-            << "xCell=" << xCell << ",yCell=" << yCell << endl
-            << "depth_min=" << depth_min << ", frame number=" << ofGetFrameNum() << endl
-            << endl;
+            << "xCell=" << xCell << ",yCell=" << yCell << ", angle=" << angle << endl
+            << "depth_min=" << depth_min << ",depth_dif=" << depth_dif << ", frame number=" << ofGetFrameNum() << endl
+            << "rnd=" << rnd << endl;
             ofSetColor(255, 255, 255);
-            ofDrawBitmapString(reportScreen.str(), 20, 100);
+            ofDrawBitmapString(reportScreen.str(), 20, 200);
         }
     }
 }
