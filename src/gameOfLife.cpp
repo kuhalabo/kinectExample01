@@ -49,15 +49,15 @@ const int SCREENRATE = 1;
 float fullScreenRatio = 1.25;
 int wfull = 800;
 int hfull = 600;
-int depth_min = 200; //影を検出するデプス値の最も大きい（近い）値
+int depth_min = 120; //影を検出するデプス値の最も大きい（近い）値
 //int depth_min = 150;
-int depth_dif = 10;//２つの影のレイヤーのテプス値の差
+int depth_dif = 40;//２つの影のレイヤーのテプス値の差
 int alphaGray = 50; // 人影のアルファ値
 int alphaSpring = 100;// 重心に描画する図形の陰のアルファ値
 int getInfo = -1;
 int cellDirection = 0;
 int nCentroid = 3; // セル生成場所の重心の検出個数
-int angle0 = 0; // kinect angle
+int angle0 = 15; // kinect angle
 int rnd = 100;
 //------------------------
 
@@ -70,6 +70,7 @@ void gameOfLife::setup() {
     //active = false;
     active = true;
     
+    ofHideCursor();
     ofSetFullscreen(false);
     ofSetWindowShape(WIDTH, HEIGHT);
     
@@ -77,8 +78,8 @@ void gameOfLife::setup() {
     
 	//ofBackground(ofColor::white);
     ofBackground(0, 0, 0);
-//	ofSetBackgroundAuto(true);
-	ofSetBackgroundAuto(false);
+	ofSetBackgroundAuto(true);
+//	ofSetBackgroundAuto(false);
 	ofSetWindowTitle("Conway's Game of Life");
 	ofSetFrameRate(FRAMERATE);
     
@@ -247,15 +248,16 @@ void gameOfLife::draw() {
 	for (int i=0; i<cols; i++) {
 		for (int j=0; j<rows; j++) {
       cell thisCell = grid[i][j];
-			ofSetColor(200, 200, 200);
+			//ofSetColor(200, 200, 200);
 			//ofSetColor(0, 255, 255);
 			ofNoFill();
             //			ofRect(i*cellWidth, j*cellHeight, cellWidth, cellHeight);
             if (thisCell.currState == true) {
 				//ofSetColor(thisCell.color.r, thisCell.color.g, thisCell.color.b, 30); // dark cell
 //				ofSetColor(thisCell.color.r, thisCell.color.g, thisCell.color.b, 130); // bright cell
-      ofSetColor(250, 254, 216, 130);
-      ofFill();
+                ofSetColor(250, 254, 216, 255);
+                //ofSetColor(ofColor::lightCyan, 255);
+                ofFill();
                 myImage.ofImage_::draw((float)(i*cellWidth), (float)(j*cellHeight), cellWidth * 1.2, cellHeight * 1.2);
 //                ofRect(i*cellWidth, j*cellHeight, cellWidth, cellHeight);
 				ofNoFill();
@@ -266,7 +268,7 @@ void gameOfLife::draw() {
     
     if (ofGetFrameNum() % TICK_INTERVAL == 0 && active) {
 //      kinektDrawPointCloud();
-      ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+//      ofEnableBlendMode(OF_BLENDMODE_ALPHA);
       
       /*パターン検出インスタンスの実行メソッド*/
       drawingResPatterns(datas);
@@ -291,7 +293,7 @@ void gameOfLife::drawingResPatterns(vector<resPattern> &datas) {
             if (resData->mPattern.pattern[resData->mPattern.patternGrid[1] * j + i ] == 1) {
               /*検出描画チェックログ よくつかう*/
               //              cout << resData->mPattern.name << endl;
-              ofSetColor(resData->mPattern.color.r, resData->mPattern.color.g, resData->mPattern.color.b, 200);
+              ofSetColor(resData->mPattern.color.r, resData->mPattern.color.g, resData->mPattern.color.b, 255);
               ofFill();
               myImage.ofImage_::draw((float)((i + resData->x.at(h)) * cellWidth) - cellWidth, (float)((j + resData->y.at(h)) * cellHeight) - cellHeight, cellWidth*3.0, cellHeight*3.0);
               //              ofRect( (i + resData->x.at(h)) * cellWidth, (j + resData->y.at(h)) * cellHeight, cellWidth, cellHeight);
@@ -864,13 +866,13 @@ void gameOfLife::kinectDraw() {
     else{
         int xCell, yCell;
         
-        ofSetColor(ofColor::darkBlue, 40);
-        grayImage03.draw(0, 0, wfull, hfull);
+//        ofSetColor(ofColor::darkGreen, 100);
+//        grayImage03.draw(0, 0, wfull, hfull);
 
-        ofSetColor(ofColor::darkBlue, 20);
+        ofSetColor(ofColor::blue, 70);
         grayImage02.draw(0, 0, wfull, hfull);
         
-        ofSetColor(ofColor::blue, 30);
+        ofSetColor(ofColor::red, 40);
         grayImage01.draw(0, 0, wfull, hfull);
         int centroX01;
         int centroY01;
