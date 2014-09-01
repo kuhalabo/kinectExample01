@@ -913,6 +913,9 @@ void gameOfLife::kinectDraw() {
                 }
             }
           }
+          else if( i == 1 && ofGetFrameNum() % (TICK_INTERVAL * 200) == 100 && active){
+              patterns::gliderGun(grid, 2, 2);
+          }
         }
 
         if( getInfo > 0 ){
