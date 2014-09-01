@@ -237,9 +237,9 @@ void gameOfLife::draw() {
             if (thisCell.currState == true) {
 				//ofSetColor(thisCell.color.r, thisCell.color.g, thisCell.color.b, 30); // dark cell
 //				ofSetColor(thisCell.color.r, thisCell.color.g, thisCell.color.b, 130); // bright cell
-      ofSetColor(250, 254, 216, 130);
+              ofSetColor(ofColor::lightCyan, 130);
       ofFill();
-                myImage.ofImage_::draw((float)(i*cellWidth), (float)(j*cellHeight), cellWidth * 1.2, cellHeight * 1.2);
+                myImage.ofImage_::draw((float)(i*cellWidth), (float)(j*cellHeight), cellWidth, cellHeight);
 //                ofRect(i*cellWidth, j*cellHeight, cellWidth, cellHeight);
 				ofNoFill();
 			}
@@ -333,18 +333,6 @@ void gameOfLife::patternMapping() {
   int patGlider2[] = {0, 0, 1, 1, 0, 1, 0, 1, 1};
   int patGlider3[] = {1, 0, 0, 0, 1, 1, 1, 1, 0};
   int patGlider4[] = {0, 0, 1, 1, 1, 0, 0, 1, 1};
-
-//  blink1 = new patternDetect("blink1", grid3x3, pat1, ofColor::cyan);
-//  blink2 = new patternDetect("blink2", grid3x3, pat2, ofColor::violet);
-//  glider1 = new patternDetect("glider1", grid3x3, patGlider1, ofColor::greenYellow);
-//  glider2 = new patternDetect("glider2", grid3x3, patGlider2, ofColor::greenYellow);
-//  glider3 = new patternDetect("glider3", grid3x3, patGlider3, ofColor::green);
-//  glider4 = new patternDetect("glider4", grid3x3, patGlider4, ofColor::green);
-//  line5 = new patternDetect("line5", grid1x7, pat3, ofColor::purple);
-//  
-//  death1 = new patternDetect("death1", grid4x3, patDeath1, ofColor::darkOliveGreen);
-//  death2 = new patternDetect("death2", grid3x4, patDeath2, ofColor::darkOliveGreen);
-//  deathRect = new patternDetect("deathRect", grid4x4, pathDeathRect, ofColor::darkBlue);
   
 //  blink1 = new patternDetect("blink1", grid3x3, pat1, ofColor::white);
 //  blink2 = new patternDetect("blink2", grid3x3, pat2, ofColor::white);
@@ -358,17 +346,17 @@ void gameOfLife::patternMapping() {
 //  death2 = new patternDetect("death2", grid3x4, patDeath2, ofColor::white);
 //  deathRect = new patternDetect("deathRect", grid4x4, pathDeathRect, ofColor::white);
   
-  blink1 = new patternDetect("blink1", grid3x3, pat1, ofColor::white);
-  blink2 = new patternDetect("blink2", grid3x3, pat2, ofColor::white);
-  glider1 = new patternDetect("glider1", grid3x3, patGlider1, ofColor::white);
-  glider2 = new patternDetect("glider2", grid3x3, patGlider2, ofColor::white);
-  glider3 = new patternDetect("glider3", grid3x3, patGlider3, ofColor::white);
-  glider4 = new patternDetect("glider4", grid3x3, patGlider4, ofColor::white);
-  line5 = new patternDetect("line5", grid1x7, pat3, ofColor::white);
+  blink1 = new patternDetect("blink1", grid3x3, pat1, ofColor::lightGoldenRodYellow);
+  blink2 = new patternDetect("blink2", grid3x3, pat2, ofColor::lightGray);
+  glider1 = new patternDetect("glider1", grid3x3, patGlider1, ofColor::lightGoldenRodYellow);
+  glider2 = new patternDetect("glider2", grid3x3, patGlider2, ofColor::lightGray);
+  glider3 = new patternDetect("glider3", grid3x3, patGlider3, ofColor::lightGoldenRodYellow);
+  glider4 = new patternDetect("glider4", grid3x3, patGlider4, ofColor::lightGray);
+  line5 = new patternDetect("line5", grid1x7, pat3, ofColor::lightGoldenRodYellow);
   
-  death1 = new patternDetect("death1", grid4x3, patDeath1, ofColor::white);
-  death2 = new patternDetect("death2", grid3x4, patDeath2, ofColor::white);
-  deathRect = new patternDetect("deathRect", grid4x4, pathDeathRect, ofColor::white);
+  death1 = new patternDetect("death1", grid4x3, patDeath1, ofColor::lightGray);
+  death2 = new patternDetect("death2", grid3x4, patDeath2, ofColor::lightGoldenRodYellow);
+  deathRect = new patternDetect("deathRect", grid4x4, pathDeathRect, ofColor::lightGray);
 }
 
 
@@ -825,16 +813,17 @@ void gameOfLife::kinectDraw() {
         }
     }
     else{
+        ofBackground(4, 4, 4);
         int xCell, yCell;
-        
-        ofSetColor(ofColor::darkBlue, 40);
+        ofSetColor(86, 119, 252, 20);
         grayImage03.draw(0, 0, wfull, hfull);
 
-        ofSetColor(ofColor::darkBlue, 20);
+        ofSetColor(37, 155, 36, 20);
         grayImage02.draw(0, 0, wfull, hfull);
         
-        ofSetColor(ofColor::blue, 30);
+        ofSetColor(229, 28, 35, 20);
         grayImage01.draw(0, 0, wfull, hfull);
+      
         int centroX01;
         int centroY01;
         for( int i = 0; i < nCentroid; i++){
